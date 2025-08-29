@@ -205,3 +205,31 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# =======================================================
+# Rules for the MCQ Grader Project (mcq-grader)
+# =======================================================
+
+# Ignore all generated output files by default
+# We use 'sample_data/' as the example, but this will also cover
+# other directories if you change the Makefile.
+/exams/_build/
+/exams/image-cache/
+/sample_data/exams/_build/
+/sample_data/image-cache/
+*.graded-results.csv
+*.results.csv
+*.template-sheet.pdf
+*.verification.pdf
+*.zones.json
+
+# Ignore LaTeX auxiliary files that might be created
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+*.zonas
+
+# It's good practice to not commit Jupyter Notebook checkpoints
+.ipynb_checkpoints
