@@ -1,5 +1,6 @@
+% File: provastyle.sty
+
 % --- Arquivo de Estilo para Provas de Programação Funcional ---
-% provastyle.sty
 
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{provastyle}[2025/08/28 Estilo para Provas BCC222]
@@ -8,7 +9,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[brazil]{babel}
-\usepackage[hmargin=15mm,vmargin=15mm]{geometry}
+\usepackage[hmargin=12mm,vmargin=12mm]{geometry}
 \usepackage{indentfirst}
 \usepackage{pslatex}
 \usepackage[scaled=0.82]{DejaVuSansMono}
@@ -57,6 +58,9 @@
 \newminted{haskell}{}
 \newmintinline{haskell}{}
 
+\newminted{c}{}
+\newmintinline{c}{}
+
 % Custom command for creating blank spaces
 \newcommand{\fillin}[1][2cm]{\rule{#1}{0.4pt}}
 
@@ -67,7 +71,7 @@
 \renewcommand{\theenumi}{\alph{enumi}}
 
 % --- Comandos Customizados ---
-\newcommand{\questionTitle}[2]{\subsubsection*{Questão #1 \hfill \small{(Cap. #2)}}}
+\newcommand{\questionTitle}[2]{\subsubsection*{Questão #1 \hfill \small{#2}}}
 
 % --- NOVOS COMANDOS PARA A GRADE DE RESPOSTAS ---
 
@@ -147,30 +151,81 @@
 }
 
 
+% --- GRADE DE MATRÍCULA ---
+\ExplSyntaxOn
+\newcommand{\PrintRegistrationGrid}[1]{%
+  \begingroup
+  \setlength{\tabcolsep}{2pt}
+  \begin{tabular}{ c *{#1}{c} }
+    % & \int_step_inline:nnn {1} {#1} {
+    %   \textbf{##1} \int_compare:nNnF {##1} = {#1} { & }
+    % } \\
+    \textbf{0} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_0} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{1} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_1} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{2} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_2} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{3} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_3} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{4} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_4} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{5} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_5} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{6} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_6} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{7} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_7} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{8} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_8} \int_compare:nNnF {##1} = {#1} { & } } \\
+    \textbf{9} & \int_step_inline:nnn {1} {#1} { \ZoneBox{id_##1_9} \int_compare:nNnF {##1} = {#1} { & } } \\
+  \end{tabular}
+  \endgroup
+}
+\ExplSyntaxOff
+
 % A parameterized macro for the answer sheet header.
-% 1.institution 2.course 3.professor 4.semester 5.title 6.version 7.numQuestions 8.numQCol
-\newcommand{\makeanswersheet}[8]{%
+% 1.institution 2.course 3.professor 4.semester 5.title 6.version 7.numQuestions 8.numQCol 9.regDigits
+\newcommand{\makeanswersheet}[9]{%
   \newpage
   \thispagestyle{empty}
 
-  \begin{center}
-    {\huge #5 \hfill \Large \bfseries Folha de Respostas \hfil \TextZone{exam_type}{#6}}\\[1.5ex] % Title Version
-    {\Large #4 -- \Large #1 -- \Large #2 \hfill \large Prof. #3}\\[1.5ex] % Semester Institution Course Professor
-  \end{center}
-  \vspace{1ex}
-
-  \noindent\textbf{Matrícula:} \hfil \textbf{Nome:} \hfil \hfil \hfil \\
-  \hrule
+  % \begin{center}
+  %   {\huge #5 \hfill \Large \bfseries Folha de Respostas \hfil \TextZone{exam_type}{#6}}\\[1.5ex] % Title Version
+  %   {\Large #4 -- \Large #1 -- \Large #2 \hfill \large Prof. #3}\\[1.5ex] % Semester Institution Course Professor
+  % \end{center}
+  % \vspace{1ex}
+  % \hrule
+  % \vspace{3ex}
   
-  \begin{center}
-    \begin{minipage}{0.8\textwidth}
-      \textbf{Instruções}:
-      \begin{itemize}[noitemsep,topsep=0.5ex, partopsep=0pt, leftmargin=*]
-        \item Use caneta preta ou azul e preencha por completo o quadrado da alternativa escolhida.
-        \item Rasuras anularão a questão.
-      \end{itemize}
-    \end{minipage}
-  \end{center}
+  \noindent
+  \begin{minipage}[t]{0.65\textwidth}
+    \vspace{0pt}
+    {\huge #5}\\[1.5ex] % Title
+    {\Large #4 -- \Large #1}\\[1.5ex] % Semester Institution
+    {\Large #2 -- \large Prof. #3}\\[2.2ex] % Course Professor
+    \ifnum#9>0
+      \textbf{Matrícula:}\hrulefill\\[4mm]
+    \else
+    \fi
+    \textbf{Nome:}\hrulefill\\[4mm]
+    \textbf{Assinatura:}\hrulefill
+    
+    \vspace{5mm}
+    \textbf{Instruções}:
+    \begin{itemize}[noitemsep,topsep=0.5ex, partopsep=0pt, leftmargin=*]
+      \item Use caneta preta ou azul e preencha por completo o quadrado da alternativa escolhida.
+      \item Rasuras anularão a questão.
+    \end{itemize}
+  \end{minipage}%
+  \hfill
+  \begin{minipage}[t]{0.3\textwidth}
+    \vspace{0pt}
+    \begin{flushright}
+      {\Large \bfseries Folha de Respostas \hfil \sffamily \TextZone{exam_type}{#6}}\\[3ex]
+      \textbf{Matrícula}\\[1ex]
+      \ifnum#9>0
+        \ZoneProperty{registration_digits}{#9}
+        \PrintRegistrationGrid{#9}
+      \else
+        \rule{0pt}{1cm}\hrulefill
+      \fi
+    \end{flushright}
+  \end{minipage}
+
+  \vspace{0.5cm}
+  \hrule
   \vspace{0.5cm}
 
   % Calls the dynamic grid generation with total questions and questions per column
