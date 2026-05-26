@@ -4,6 +4,7 @@ import os
 import json
 import argparse
 from PIL import Image
+from PIL import features
 import sys
 import omr_utils
 
@@ -68,7 +69,16 @@ def main(args):
     if args.output.lower().endswith('.pdf'):
         print(f"\nCreating output PDF at '{args.output}'...")
         if verification_images_pil:
-            verification_images_pil[0].save(args.output, save_all=True, append_images=verification_images_pil[1:])
+            # Pillow's PDF writer delegates RGB images to the JPEG save
+            # handler. In some environments, notably minimal/Nix Python
+            # closures, the JPEG plugin may not be registered yet.
+            Image.init()
+            if "JPEG" not in Image.SAVE or not features.check("jpg"):
+                raise RuntimeError(
+                    "Pillow JPEG support is unavailable. Rebuild/install Pillow "
+                    "with libjpeg support, or save verification output as images."
+                )
+            verification_images_pil[0].save(args.output, "PDF", save_all=True, append_images=verification_images_pil[1:])
         print("PDF created successfully.")
     else:
         print(f"\nSaving verification images to directory '{args.output}'...")
