@@ -17,6 +17,7 @@ The bundled example under `sample-data/exams/` was generated with [ExamForge](ht
   * **Robust fallback alignment**: for older answer sheets without markers, the system automatically falls back to a robust affine alignment method based on image features.
   * **Image caching**: the conversion of PDFs to images (the slowest step) is performed only once. Images are saved to a cache directory for instant reuse in subsequent runs.
   * **Bubble-encoded registration numbers**: newer ExamForge answer sheets can encode the student registration number as digit bubbles (`id_1_0` through `id_N_9`), avoiding fragile OCR for student identifiers.
+  * **Exam type normalization**: OCR/CSV exam variant values such as `01`, `o1`, and `O1` are normalized before grading, avoiding false missing-key errors.
   * **Complex grading logic**: supports questions with multiple correct answers using distinct modes:
       * **Inclusive OR** (e.g., `A+B`): the student is correct if they mark any non-empty subset of the correct answers, without marking any incorrect ones.
       * **Exclusive AND** (e.g., `AB`): the student must mark *exactly* all correct answers and no others.
@@ -60,7 +61,7 @@ The system follows a clear data processing pipeline:
 1.  **LaTeX compilation:** the `.tex` source file is compiled, generating a main PDF and auxiliary files (`.aux`, `.zonas`) containing precise coordinate data for all defined zones.
 2.  **Zone generation:** `generate_zones.py` parses the auxiliary files and creates an image-coordinate `zones.json` map from the LaTeX metadata. If the LaTeX metadata contains `registration_digits` and `id_<position>_<digit>` zones, the generated map includes a registration bubble grid.
 3.  **Answer extraction:** `process_sheets.py` reads the scanned student sheets, aligns each page to the template using the three printed fiducial markers when available, uses the `zones.json` map to locate the answers, performs Optical Mark Recognition (OMR), decodes bubble registration numbers when present, and saves the results to a CSV file.
-4.  **Grading:** `grade_exams.py` compares the extracted answers with the answer key, applies the grading logic, and produces the final CSV with scores.
+4.  **Grading:** `grade_exams.py` normalizes the extracted exam type, compares the extracted answers with the answer key, applies the grading logic, and produces the final CSV with scores.
 
 ## Prerequisites
 
@@ -174,6 +175,8 @@ LATEXMK_FLAGS ?= -shell-escape
   make REG_CONF_RATIO=0.85
   ```
   Registration bubbles automatically cap their effective padding so tightly spaced digit bubbles do not overlap neighboring rows or columns.
+  * **Exam type OCR normalization:** numeric exam variants are normalized before answer-key lookup. For example, OCR outputs such as `o1`, `O1`, and `01` all match answer key variant `1`.
+
 * **Manual zone adjustment:** if you need to manually fix a zone for sheets without proper LaTeX metadata:
   1.  Run `make map-manual`.
   2.  Capture the coordinates for the desired zone.

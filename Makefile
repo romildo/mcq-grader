@@ -85,7 +85,7 @@ map-manual: $(TEMPLATE_PDF)
 # ==============================================================================
 
 # 1. Generate the final graded CSV file
-$(GRADED_CSV): $(RESULTS_CSV) $(ANSWER_KEYS_CSV) $(SCRIPTS_DIR)/grade_exams.py
+$(GRADED_CSV): $(RESULTS_CSV) $(ANSWER_KEYS_CSV) $(SCRIPTS_DIR)/grade_exams.py $(SCRIPTS_DIR)/omr_utils.py
 	@echo "--> Grading exams..."
 	$(PYTHON) $(SCRIPTS_DIR)/grade_exams.py \
 		--answers-csv $(RESULTS_CSV) \

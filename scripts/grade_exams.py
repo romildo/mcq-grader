@@ -2,6 +2,7 @@
 import pandas as pd
 import argparse
 import sys
+import omr_utils
 
 def compare_answers(student_answer_str, key_answer_str):
     """Compares the student's answer with the answer key, applying special rules."""
@@ -40,8 +41,30 @@ def main(args):
     confidence_cols = [col for col in df_answers.columns if 'Confidence_Q' in col]
     df_formatted_results = df_answers.drop(columns=confidence_cols)
         
+    if 'Exam_Type' not in df_keys.columns:
+        print("Error: answer key CSV is missing required column 'Exam_Type'.", file=sys.stderr)
+        sys.exit(1)
+
+    if 'Exam_Type' not in df_formatted_results.columns:
+        print("Error: answers CSV is missing required column 'Exam_Type'.", file=sys.stderr)
+        sys.exit(1)
+
+    df_keys['Exam_Type'] = df_keys['Exam_Type'].map(omr_utils.normalize_exam_type)
+    df_formatted_results['Exam_Type'] = df_formatted_results['Exam_Type'].map(omr_utils.normalize_exam_type)
+
+    duplicate_key_types = sorted(
+        exam_type for exam_type in df_keys['Exam_Type'].dropna().unique()
+        if exam_type and (df_keys['Exam_Type'] == exam_type).sum() > 1
+    )
+    if duplicate_key_types:
+        print(
+            "Error: answer key CSV has duplicate Exam_Type values after normalization: "
+            + ", ".join(duplicate_key_types),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     df_keys.set_index('Exam_Type', inplace=True)
-    print(df_keys.index); print("==============") # HERE
     
     scores = []
     normalized_scores = []
@@ -52,7 +75,7 @@ def main(args):
         correct_answers = 0
         exam_type = student_row.get('Exam_Type')
         
-        if pd.isna(exam_type) or exam_type not in df_keys.index:
+        if not exam_type or pd.isna(exam_type) or exam_type not in df_keys.index:
             print(f"Warning: Answer key not found for Exam Type '{exam_type}' ... Assigning score 0.")
             scores.append(0)
             normalized_scores.append(0.0)

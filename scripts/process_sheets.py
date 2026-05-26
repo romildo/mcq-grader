@@ -225,7 +225,13 @@ def main(args):
         else:
             student_name = ""
 
-        exam_type = extract_text_zone(aligned, ZONES_MAP, 'exam_type', args.padding)
+        raw_exam_type = extract_text_zone(aligned, ZONES_MAP, 'exam_type', args.padding)
+        exam_type = omr_utils.normalize_exam_type(raw_exam_type)
+        if raw_exam_type.strip() and exam_type != raw_exam_type.strip():
+            print(
+                f"  -> Normalized exam type OCR '{raw_exam_type}' to '{exam_type}' "
+                f"on page {page_number}."
+            )
 
         answers, q_num, options = {}, 1, ['A', 'B', 'C', 'D', 'E']
 

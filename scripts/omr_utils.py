@@ -2,8 +2,51 @@
 import os
 import sys
 import subprocess
+import math
+import re
 import cv2
 import numpy as np
+
+def normalize_exam_type(value):
+    """Normalize OCR/CSV exam type values for answer-key lookup.
+
+    Exam variants are normally numeric, but OCR can confuse zero/one-like
+    glyphs, for example reading "01" as "o1". This function maps common OCR
+    confusions to digits and returns canonical numeric strings without leading
+    zeros. Non-numeric labels are returned stripped so legacy non-numeric exam
+    types still have a chance to match their answer keys.
+    """
+    if value is None:
+        return ""
+
+    if isinstance(value, float) and math.isnan(value):
+        return ""
+
+    text = str(value).strip()
+    if not text or text.lower() in {"nan", "none"}:
+        return ""
+
+    replacements = {
+        "O": "0",
+        "o": "0",
+        "Q": "0",
+        "D": "0",
+        "I": "1",
+        "l": "1",
+        "|": "1",
+    }
+    normalized = "".join(replacements.get(char, char) for char in text)
+
+    numeric_match = re.fullmatch(r"\d+(?:\.0+)?", normalized)
+    if numeric_match:
+        return str(int(float(normalized)))
+
+    digits = "".join(char for char in normalized if char.isdigit())
+    if digits:
+        return str(int(digits))
+
+    return normalized
+
 
 def manage_image_cache(pdf_path, image_dir, image_prefix, is_template=False):
     """
