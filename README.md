@@ -13,7 +13,7 @@ The bundled example under `sample-data/exams/` was generated with [ExamForge](ht
 ## Key Features
 
   * **Automated zoning via LaTeX**: zone coordinates for answer bubbles, header fields, and bubble-encoded registration numbers are extracted directly from LaTeX compilation (`.aux` and `.zonas`) files, eliminating the need for manual mapping.
-  * **High-precision alignment**: utilizes fiducial markers (marks in the corners of the page) when available for precise geometric alignment, accurately correcting rotation and scale distortions.
+  * **High-precision alignment**: detects the printed top-left, top-right, and bottom-left fiducial markers directly from the template and scanned sheets, then computes a full affine transform to correct rotation, shear, and independent horizontal/vertical scale distortions.
   * **Robust fallback alignment**: for older answer sheets without markers, the system automatically falls back to a robust affine alignment method based on image features.
   * **Image caching**: the conversion of PDFs to images (the slowest step) is performed only once. Images are saved to a cache directory for instant reuse in subsequent runs.
   * **Bubble-encoded registration numbers**: newer ExamForge answer sheets can encode the student registration number as digit bubbles (`id_1_0` through `id_N_9`), avoiding fragile OCR for student identifiers.
@@ -59,7 +59,7 @@ The system follows a clear data processing pipeline:
 
 1.  **LaTeX compilation:** the `.tex` source file is compiled, generating a main PDF and auxiliary files (`.aux`, `.zonas`) containing precise coordinate data for all defined zones.
 2.  **Zone generation:** `generate_zones.py` parses the auxiliary files and creates an image-coordinate `zones.json` map from the LaTeX metadata. If the LaTeX metadata contains `registration_digits` and `id_<position>_<digit>` zones, the generated map includes a registration bubble grid.
-3.  **Answer extraction:** `process_sheets.py` reads the scanned student sheets, uses the `zones.json` map to align the image and locate the answers, performs Optical Mark Recognition (OMR), decodes bubble registration numbers when present, and saves the results to a CSV file.
+3.  **Answer extraction:** `process_sheets.py` reads the scanned student sheets, aligns each page to the template using the three printed fiducial markers when available, uses the `zones.json` map to locate the answers, performs Optical Mark Recognition (OMR), decodes bubble registration numbers when present, and saves the results to a CSV file.
 4.  **Grading:** `grade_exams.py` compares the extracted answers with the answer key, applies the grading logic, and produces the final CSV with scores.
 
 ## Prerequisites
@@ -121,7 +121,7 @@ LATEXMK_FLAGS ?= -shell-escape
 * Place the Python scripts in the directory defined by the `SCRIPTS_DIR` variable in the `Makefile` (e.g., `scripts/`).
 * Place your exam source files in the `EXAMS_DIR` (e.g., `sample-data/exams/`). This includes:
     * The main `.tex` file for your exam.
-    * The `provastyle.sty` file (ensure it contains the fiducial marker definitions).
+    * The `provastyle.sty` file.
     * The answer key `.csv` file.
     * The scanned PDF of the filled-out student answer sheets.
     * For bubble registration, the LaTeX-generated `.zonas` data must include `registration_digits` and zones named `id_1_0` through `id_N_9`.
