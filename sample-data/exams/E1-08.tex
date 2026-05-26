@@ -1,0 +1,1861 @@
+\documentclass[a4paper,10pt,brazil]{article}
+\usepackage{provastyle}
+\usepackage{menukeys}
+
+\begin{document}
+\makeexamtitlepage{UFOP}{BCC222: Programação Funcional}{José Romildo}{2026/1}{Primeira Prova}{08}
+\begin{multicols}{2}
+\questionTitle{1}{Assinatura de função com dois Int e String}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-funcao-assinatura-01}\\
+
+\end{flushright}
+Qual das seguintes assinaturas de tipo representa uma função que recebe dois \haskellinline{Int} e uma \haskellinline{String} e retorna um \haskellinline{Bool}?
+
+\begin{enumerate}
+  \item \haskellinline{(Int, Int, String) -> Bool}
+
+  \item \haskellinline{Int -> Int -> String -> Bool}
+
+  \item \haskellinline{[Int, Int, String] -> Bool}
+
+  \item \haskellinline{Int -> Int -> String, Bool}
+
+  \item \haskellinline{Bool -> Int -> Int -> String}
+
+
+\end{enumerate}
+
+\questionTitle{2}{Avaliação parametrizada de expressão let}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-let-escopo-01}\\
+
+\end{flushright}
+Qual é o valor da expressão abaixo?
+
+\begin{haskellcode}
+let n = 3; q = n ^ 2 in q + n
+\end{haskellcode}
+
+\begin{enumerate}
+  \item \haskellinline|9|.
+
+  \item \haskellinline|3|.
+
+  \item \haskellinline|12|.
+
+  \item A expressão é inválida porque \haskellinline|let| só pode aparecer no início de uma definição de função.
+
+  \item \haskellinline|27|.
+
+
+\end{enumerate}
+
+\questionTitle{3}{Próxima equação da função}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-guardas-exaustividade-03}\\
+
+\end{flushright}
+Considere a definição:
+\begin{haskellcode}
+h x
+  | x > 0 = "Positivo"
+h x = "Não positivo"
+\end{haskellcode}
+Qual é o resultado de \haskellinline|h 0|?
+
+\begin{enumerate}
+  \item Ocorre um erro, pois a primeira equação não tem \haskellinline|otherwise|.
+
+  \item \haskellinline|"Não positivo"|
+
+  \item O compilador rejeita a definição por possuir duas equações para a mesma função.
+
+  \item \haskellinline|0|
+
+  \item \haskellinline|"Positivo"|
+
+
+\end{enumerate}
+
+\questionTitle{4}{Inferência em discriminante de equação quadrática}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-inferencia-possui-raizes}\\
+
+\end{flushright}
+Considere:
+
+\begin{minted}{haskell}
+possuiRaizesReais a b c = b^2 - 4*a*c >= 0
+\end{minted}
+
+Qual assinatura é a mais geral?
+
+\begin{enumerate}
+  \item \mintinline{haskell}{possuiRaizesReais :: Floating a => a -> a -> a -> [a]}
+  \item \mintinline{haskell}{possuiRaizesReais :: Num a => a -> a -> a -> Bool}
+  \item \mintinline{haskell}{possuiRaizesReais :: Bool -> Bool -> Bool -> Bool}
+  \item \mintinline{haskell}{possuiRaizesReais :: (Num a, Ord a) => a -> a -> a -> Bool}
+  \item \mintinline{haskell}{possuiRaizesReais :: Ord a => a -> a -> a -> Bool}
+
+\end{enumerate}
+
+\questionTitle{5}{Tipo de resultado de lookup}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{6: Estruturas de dados básicas}}\\
+  \textit{c06-lookup-associacao-03}\\
+
+\end{flushright}
+Ao buscar uma chave em uma lista de associação com \haskellinline{lookup}, por que o resultado é representado com \haskellinline{Maybe}?
+
+\begin{enumerate}
+  \item Porque o uso de \haskellinline{lookup} transforma automaticamente qualquer lista em uma enumeração.
+
+  \item Porque a chave pode estar presente ou ausente, e \haskellinline{Maybe} representa explicitamente essas duas possibilidades.
+
+  \item Porque Haskell não permite devolver diretamente valores como \haskellinline{String} ou \haskellinline{Double}.
+
+  \item Porque toda função que opera sobre tuplas em Haskell precisa devolver um \haskellinline{Maybe}.
+
+  \item Porque \haskellinline{lookup} sempre devolve uma lista, mesmo quando encontra apenas um valor.
+
+
+\end{enumerate}
+
+\questionTitle{6}{Sintaxe de aplicação prefixa}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-aplicacao-notacoes-01}\\
+
+\end{flushright}
+Considere a expressão \haskellinline|mod 25 7|. Qual interpretação está correta de acordo com a sintaxe de aplicação de funções em Haskell?
+
+\begin{enumerate}
+  \item \haskellinline|mod| recebe um único argumento, a tupla \haskellinline|(25,7)|.
+
+  \item A função \haskellinline|mod| é aplicada a dois argumentos, \haskellinline|25| e \haskellinline|7|, separados por espaços.
+
+  \item A expressão só seria válida se fosse escrita como \haskellinline|mod(25, 7)|.
+
+  \item A expressão aplica \haskellinline|25| como função aos argumentos \haskellinline|mod| e \haskellinline|7|.
+
+  \item A expressão é inválida porque funções em Haskell sempre exigem parênteses em volta dos argumentos.
+
+
+\end{enumerate}
+
+\questionTitle{7}{If produzindo função}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-if-avaliacao-03}\\
+
+\end{flushright}
+Qual é o resultado da expressão abaixo?
+\begin{haskellcode}
+(if 5 > 3 then (*) else (+)) 4 2
+\end{haskellcode}
+
+\begin{enumerate}
+  \item \haskellinline|6|
+
+  \item \haskellinline|8|
+
+  \item Ocorre um erro de sintaxe, pois \haskellinline|if| não pode aparecer entre parênteses.
+
+  \item \haskellinline|14|
+
+  \item Ocorre um erro de tipo, pois os ramos do \haskellinline|if| são funções.
+
+
+\end{enumerate}
+
+\questionTitle{8}{Raiz quadrada inteira}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{9: Funções recursivas}}\\
+  \textit{c09-projeto-raiz-inteira-01}\\
+
+\end{flushright}
+A raiz quadrada inteira de \haskellinline|n| é o maior \haskellinline|r| tal que \haskellinline|r^2 <= n|. Qual estratégia recursiva está alinhada com essa definição?
+
+\begin{enumerate}
+  \item Começar em \haskellinline|0| e diminuir o candidato até que ele seja negativo.
+
+  \item Usar \haskellinline|sqrt| e depois converter o resultado para inteiro, pois o exercício exige ponto flutuante.
+
+  \item Começar com um candidato \haskellinline|i| e diminuí-lo enquanto \haskellinline|i^2 > n|; quando essa condição falhar, \haskellinline|i| é a resposta.
+
+  \item Somar \haskellinline|n| consigo mesmo até ultrapassar \haskellinline|n^2|.
+
+  \item Multiplicar \haskellinline|n| por \haskellinline|2| até que o resultado seja quadrado perfeito.
+
+
+\end{enumerate}
+
+\questionTitle{9}{Rastreamento da multiplicação recursiva}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{9: Funções recursivas}}\\
+  \textit{c09-rastreamento-mul-01}\\
+
+\end{flushright}
+Considere:
+\begin{haskellcode}
+mul :: Int -> Int -> Int
+mul m n
+  | n == 0    = 0
+  | n > 0     = m + mul m (n - 1)
+  | otherwise = negate (mul m (negate n))
+\end{haskellcode}
+Qual é o valor de \haskellinline|mul 5 6|?
+
+\begin{enumerate}
+  \item \haskellinline|35|
+
+  \item \haskellinline|25|
+
+  \item \haskellinline|30|
+
+  \item \haskellinline|-30|
+
+  \item \haskellinline|11|
+
+
+\end{enumerate}
+
+\questionTitle{10}{Anotação de tipo em read}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{8: Programas interativos}}\\
+  \textit{c08-conversao-validacao-03}\\
+
+\end{flushright}
+Por que é comum escrever uma anotação como \haskellinline|read linha :: Double| ao converter uma entrada textual?
+
+\begin{enumerate}
+  \item Porque \haskellinline|read| é polimórfica. A anotação informa ao compilador qual tipo deve ser produzido pela conversão.
+
+  \item Porque \haskellinline|read| só funciona se o tipo final for escrito dentro de uma string.
+
+  \item Porque \haskellinline|read| sempre retorna \haskellinline|Double|, mas a anotação melhora a legibilidade.
+
+  \item Porque a anotação força o programa a tratar exceções de conversão automaticamente.
+
+  \item Porque sem anotação \haskellinline|read| lê diretamente da entrada padrão.
+
+
+\end{enumerate}
+
+\questionTitle{11}{Otherwise fora da última guarda}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-otherwise-03}\\
+
+\end{flushright}
+Considere a definição:
+\begin{haskellcode}
+g x
+  | otherwise = 1
+  | x > 0     = 2
+\end{haskellcode}
+O que acontece ao avaliar \haskellinline|g 5|?
+
+\begin{enumerate}
+  \item Ocorre um erro em tempo de execução por ambiguidade entre as guardas.
+
+  \item O resultado é \haskellinline|2|, porque a guarda \haskellinline|x > 0| seria mais específica.
+
+  \item Ocorre um erro de sintaxe, pois \haskellinline|otherwise| só pode aparecer na última linha.
+
+  \item O compilador reordena as guardas e produz \haskellinline|2|.
+
+  \item O resultado é \haskellinline|1|, porque \haskellinline|otherwise| equivale a \haskellinline|True|.
+
+
+\end{enumerate}
+
+\questionTitle{12}{Equivalência com guardas}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-if-aninhamento-03}\\
+
+\end{flushright}
+Qual definição com guardas é funcionalmente equivalente à função abaixo?
+\begin{haskellcode}
+sinal n = if n < 0 then -1 else if n > 0 then 1 else 0
+\end{haskellcode}
+
+\begin{enumerate}
+  \item \begin{haskellcode}
+sinal n = if n == 0 then -1 else 1
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+sinal n
+  | n <= 0    = -1
+  | otherwise = 1
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+sinal n
+  | n < 0     = -1
+  | n > 0     = 1
+  | otherwise = 0
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+sinal n
+  | n > 0     = -1
+  | n < 0     = 1
+  | otherwise = 0
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+sinal n
+  | n < 0     = -1
+  | otherwise = 1
+\end{haskellcode}
+
+
+\end{enumerate}
+
+\questionTitle{13}{Rastreamento do acumulador na leitura até zero}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{10: Ações de E/S recursivas}}\\
+  \textit{c10-acumuladores-cauda-03}\\
+
+\end{flushright}
+Na função abaixo, o usuário digita a sequência \haskellinline|10, -2, 7, 0|, um valor por linha.
+
+\begin{haskellcode}
+lerESomar :: Integer -> IO Integer
+lerESomar total = do
+  n <- readLn
+  if n == 0
+    then return total
+    else lerESomar (total + n)
+\end{haskellcode}
+
+Qual é o valor de \haskellinline|total| no momento em que o caso base é alcançado?
+
+\begin{enumerate}
+  \item 7
+
+  \item 15
+
+  \item 14
+
+  \item 16
+
+  \item 0
+
+
+\end{enumerate}
+
+\questionTitle{14}{Uso seguro de fromJust}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{6: Estruturas de dados básicas}}\\
+  \textit{c06-maybe-operacoes-02}\\
+
+\end{flushright}
+Em qual situação o uso de \haskellinline{fromJust} é mais justificável neste capítulo?
+
+\begin{enumerate}
+  \item Sempre que a expressão aparecer dentro de uma lista.
+
+  \item Quando uma verificação anterior, como \haskellinline{isJust}, já garantiu que o valor não é \haskellinline{Nothing}.
+
+  \item Apenas quando o conteúdo for uma string, mas não quando for um número.
+
+  \item Sempre que a expressão tiver o tipo \haskellinline{Maybe Int}.
+
+  \item Sempre que quisermos evitar o uso de \haskellinline{fromMaybe}.
+
+
+\end{enumerate}
+
+\questionTitle{15}{Bounded e tipos com limites}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-hierarquia-bounded-integer}\\
+
+\end{flushright}
+Qual alternativa explica corretamente por que \haskellinline{Int} é instância de \haskellinline{Bounded}, mas \haskellinline{Integer} normalmente não é?
+\begin{enumerate}
+  \item \haskellinline{Int} tem limites mínimo e máximo dependentes da implementação; \haskellinline{Integer} representa inteiros de precisão arbitrária e não possui limite superior ou inferior fixo.
+  \item \haskellinline{Integer} não é numérico, por isso não pode ter limites.
+  \item \haskellinline{Int} é instância de \haskellinline{Bounded} porque possui valores fracionários.
+  \item \haskellinline{Integer} não é instância de \haskellinline{Bounded} porque não é ordenável.
+  \item \haskellinline{Bounded} só se aplica a tipos booleanos.
+
+\end{enumerate}
+
+\questionTitle{16}{Tipo de uma média com fromIntegral}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-expressao-media-corrigida}\\
+
+\end{flushright}
+Qual é o tipo mais geral da expressão abaixo?
+
+\begin{minted}{haskell}
+fromIntegral (length [True, False]) / 2
+\end{minted}
+
+\begin{enumerate}
+  \item \mintinline{haskell}{Integer}
+  \item \mintinline{haskell}{Bool}
+  \item \mintinline{haskell}{Int}
+  \item \mintinline{haskell}{[Bool] -> Int}
+  \item \mintinline{haskell}{Fractional a => a}
+
+\end{enumerate}
+
+\questionTitle{17}{Erro de tipo ao retornar uma ação}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{10: Ações de E/S recursivas}}\\
+  \textit{c10-return-tipos-03}\\
+
+\end{flushright}
+Considere uma tentativa de escrever uma contagem regressiva recursiva:
+
+\begin{haskellcode}
+contagem :: Int -> IO ()
+contagem n =
+  if n <= 0
+    then return ()
+    else do
+      print n
+      return (contagem (n - 1))
+\end{haskellcode}
+
+Qual é o problema principal dessa definição?
+
+\begin{enumerate}
+  \item A condição \haskellinline|n <= 0| deveria ser substituída por \haskellinline|n == 0|, pois guardas não aceitam desigualdades.
+
+  \item O problema é que ações de tipo \haskellinline|IO ()| nunca podem ser definidas recursivamente.
+
+  \item A chamada \haskellinline|print n| precisa ficar depois da chamada recursiva para que o programa compile.
+
+  \item A função \haskellinline|return| imprime a ação \haskellinline|contagem (n - 1)| em vez de chamá-la.
+
+  \item No ramo recursivo, \haskellinline|return (contagem (n - 1))| cria uma ação que produz outra ação, levando a um tipo como \haskellinline|IO (IO ())| em vez de executar a chamada recursiva.
+
+
+\end{enumerate}
+
+\questionTitle{18}{Estratégias de Redução e Confluência}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{1: Paradigmas de programação}}\\
+  \textit{c01-mecanismo-reducao-03}\\
+
+\end{flushright}
+Ao avaliar uma expressão matemática em Haskell, o sistema pode teoricamente adotar diferentes caminhos de avaliação, como a redução \emph{de dentro para fora} (aplicativa) ou \emph{de fora para dentro} (normal/preguiçosa). 
+
+Graças à pureza e à ausência de efeitos colaterais na linguagem, qual garantia teórica fundamental o programador possui independentemente do caminho escolhido pelo compilador?
+
+\begin{enumerate}
+  \item A garantia de que a quantidade de memória RAM alocada dinamicamente durante o processo de avaliação será anulada pelo \emph{Garbage Collector}.
+
+  \item A garantia de que a execução da expressão consumirá exatamente a mesma quantidade de milissegundos na CPU do usuário.
+
+  \item A garantia de que, caso ambas as estratégias cheguem a um resultado final sem entrar em \emph{loop} infinito, este resultado será sempre o mesmo (Teorema de Church-Rosser).
+
+  \item A garantia de que as funções envolvidas na expressão serão automaticamente vetorizadas e enviadas para execução na GPU.
+
+  \item A garantia de que os tipos numéricos fracionários estarão imunes a qualquer tipo de erro de precisão de ponto flutuante do padrão IEEE 754.
+
+
+\end{enumerate}
+
+\questionTitle{19}{Definição local em programa interativo}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{8: Programas interativos}}\\
+  \textit{c08-programas-completos-03}\\
+
+\end{flushright}
+Analise:
+
+\begin{minted}{haskell}
+main :: IO ()
+main = do
+  n <- readLn :: IO Int
+  let dobro = 2 * n
+  print dobro
+\end{minted}
+
+Qual afirmação descreve corretamente a linha com \haskellinline|let|?
+
+\begin{enumerate}
+  \item Ela define localmente o valor puro \haskellinline|dobro|, usando o valor \haskellinline|n| já obtido pela ação \haskellinline|readLn|.
+
+  \item Ela transforma \haskellinline|dobro| em uma ação do tipo \haskellinline|IO Int|.
+
+  \item Ela só seria válida se fosse escrita como \haskellinline|dobro <- 2 * n|.
+
+  \item Ela executa uma nova ação de E/S para ler o valor de \haskellinline|dobro|.
+
+  \item Ela imprime automaticamente o dobro antes da linha \haskellinline|print dobro|.
+
+
+\end{enumerate}
+
+\questionTitle{20}{Ambiguidade com read dentro de length}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-defaulting-length-read}\\
+
+\end{flushright}
+Considere:
+
+\begin{minted}{haskell}
+r = length [read "10", read "20"]
+\end{minted}
+
+Por que essa definição é problemática em compilação normal?
+
+\begin{enumerate}
+  \item O resultado de \haskellinline{length} é \haskellinline{Int}, mas o tipo dos elementos lidos permanece restrito apenas por \haskellinline{Read a}, sem contexto suficiente para escolher \haskellinline{a}.
+  \item \haskellinline{length} exige que os elementos da lista sejam instâncias de \haskellinline{Num}.
+  \item \haskellinline{read} sempre retorna \haskellinline{String}, e \haskellinline{length} não aceita listas de strings.
+  \item O problema é que listas em Haskell não podem conter valores produzidos por funções.
+  \item A definição é sempre resolvida como \haskellinline{[Int]} por causa dos caracteres numéricos nas strings.
+
+\end{enumerate}
+
+\questionTitle{21}{Tipo unitário}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{6: Estruturas de dados básicas}}\\
+  \textit{c06-tuplas-unitario-01}\\
+
+\end{flushright}
+Qual afirmação descreve corretamente o tipo \haskellinline{()} em Haskell?
+
+\begin{enumerate}
+  \item É apenas outra notação para a lista vazia \haskellinline{[]}.
+
+  \item É o tipo unitário: possui exatamente um único valor, também escrito como \haskellinline{()}.
+
+  \item É a forma como Haskell representa uma tupla de um elemento.
+
+  \item É um tipo reservado exclusivamente para expressões numéricas.
+
+  \item É um sinônimo de tipo para \haskellinline{Bool}.
+
+
+\end{enumerate}
+
+\questionTitle{22}{Resultados de funções RealFrac}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-conversao-realfrac-param}\\
+
+\end{flushright}
+Qual é o resultado da avaliação da expressão abaixo?
+
+\begin{minted}{haskell}
+floor (-2.8) :: Int
+\end{minted}
+
+\begin{enumerate}
+  \item A expressão causa erro de tipo, pois \haskellinline{RealFrac} não permite retornar \haskellinline{Int}.
+  \item \haskellinline|2|
+  \item \haskellinline|-3|
+  \item \haskellinline|-2|
+  \item \haskellinline|3|
+
+\end{enumerate}
+
+\questionTitle{23}{Garantias da função pura}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{1: Paradigmas de programação}}\\
+  \textit{c01-transparencia-referencial-03}\\
+
+\end{flushright}
+Uma \textbf{função pura} é a base fundamental da construção de software no paradigma declarativo funcional. Assinale a alternativa que descreve corretamente as duas garantias absolutas oferecidas por uma função pura.
+
+\begin{enumerate}
+  \item 1) Ela é garantida de terminar (não entrar em loop infinito). 2) Ela executa obrigatoriamente em tempo constante $\mathcal{O}(1)$.
+
+  \item 1) Ela avalia todos os seus argumentos de forma estrita (\emph{strict evaluation}) antes de executar. 2) Ela não depende de bibliotecas de terceiros.
+
+  \item 1) Ela possui uma assinatura de tipo polimórfica explícita. 2) Ela substitui automaticamente operações de ponto flutuante por inteiros para evitar imprecisões matemáticas.
+
+  \item 1) Ela não utiliza declarações de variáveis locais em seu corpo. 2) Ela só pode receber matrizes e listas imutáveis como parâmetros.
+
+  \item 1) Ela sempre avalia para o mesmo resultado quando recebe os mesmos argumentos. 2) Ela não causa nenhum efeito colateral observável fora de seu escopo.
+
+
+\end{enumerate}
+
+\questionTitle{24}{Ações de saída padrão}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{8: Programas interativos}}\\
+  \textit{c08-entrada-saida-03}\\
+
+\end{flushright}
+Considere a função de saída \haskellinline|print|. Qual alternativa descreve corretamente seu tipo e seu comportamento?
+
+\begin{enumerate}
+  \item \haskellinline|String -> String| — transforma texto sem construir nenhuma ação de E/S.
+
+  \item \haskellinline|String -> IO ()| — só imprime strings já formatadas.
+
+  \item \haskellinline|Read a => IO a| — lê e converte valores da entrada padrão.
+
+  \item \haskellinline|Show a => a -> IO ()| — constrói uma ação que imprime a representação textual de um valor.
+
+  \item \haskellinline|IO String| — lê da entrada padrão o texto que deveria ser impresso.
+
+
+\end{enumerate}
+
+\questionTitle{25}{Avaliação parametrizada com precedência e associatividade}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-precedencia-associatividade-01}\\
+
+\end{flushright}
+Qual é o resultado da seguinte expressão em Haskell?
+
+\begin{haskellcode}
+length [1,2,3] + 4 * 2
+\end{haskellcode}
+
+\begin{enumerate}
+  \item A expressão é sintaticamente inválida.
+
+  \item \haskellinline|14|.
+
+  \item \haskellinline|11|.
+
+  \item \haskellinline|8|.
+
+  \item \haskellinline|9|.
+
+
+\end{enumerate}
+
+\questionTitle{26}{Necessidade de reverse ao acumular com cons}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{10: Ações de E/S recursivas}}\\
+  \textit{c10-listas-ordem-01}\\
+
+\end{flushright}
+Considere a função:
+
+\begin{haskellcode}
+lerLista :: [Integer] -> IO [Integer]
+lerLista xs = do
+  x <- readLn
+  if x == 0
+    then return (reverse xs)
+    else lerLista (x:xs)
+\end{haskellcode}
+
+Por que \haskellinline|reverse| é usado no caso base?
+
+\begin{enumerate}
+  \item Porque \haskellinline|reverse| força a ação de E/S a ser executada antes do caso base.
+
+  \item Porque \haskellinline|sum| exige que a lista esteja invertida para funcionar corretamente.
+
+  \item Porque \haskellinline|readLn| sempre lê os números na ordem inversa em que foram digitados.
+
+  \item Porque cada novo valor é inserido no início do acumulador com \haskellinline|x:xs|, invertendo a ordem de entrada.
+
+  \item Porque \haskellinline|return| só aceita listas ordenadas em ordem crescente.
+
+
+\end{enumerate}
+
+\questionTitle{27}{O comando :type e sua utilidade}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{2: Ambiente de desenvolvimento}}\\
+  \textit{c02-ghci-inspecao-01}\\
+
+\end{flushright}
+Durante uma sessão interativa no GHCi, o programador utiliza frequentemente o comando \texttt{:type} (ou \texttt{:t}). O que este comando executa quando aplicado a uma expressão?
+
+\begin{enumerate}
+  \item Ele exibe o código-fonte original (em linguagem Haskell) que originou a função solicitada.
+
+  \item Ele força a avaliação completa da expressão matemática e formata a saída em um texto de múltiplas linhas legível para o usuário.
+
+  \item Ele modifica o tipo da variável em tempo real, permitindo que um inteiro seja tratado como \emph{string} no GHCi temporariamente.
+
+  \item Ele pesquisa no repositório oficial da linguagem quais pacotes exportam tipos de dados que correspondam à expressão digitada.
+
+  \item Ele inspeciona e exibe a assinatura de tipo inferida pelo compilador para a expressão fornecida, sem efetivamente avaliá-la (executá-la).
+
+
+\end{enumerate}
+
+\questionTitle{28}{Classes de tipo e interfaces de POO}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-comparacao-typeclass-poo}\\
+
+\end{flushright}
+Uma analogia comum aproxima classes de tipo em Haskell de interfaces em linguagens orientadas a objetos. Qual afirmação evita a simplificação excessiva?
+\begin{enumerate}
+  \item A analogia é útil porque ambas especificam operações disponíveis, mas classes de tipo são resolvidas por instâncias e restrições de tipos, não por subtipagem nominal de objetos mutáveis.
+  \item Classes de tipo só existem para simular herança múltipla em Haskell.
+  \item Classes de tipo não têm qualquer relação com operações; elas servem apenas para documentação.
+  \item Classes de tipo são exatamente classes de POO, com campos, construtores e herança de implementação.
+  \item Interfaces de POO e classes de tipo são idênticas porque ambas exigem que todos os métodos sejam chamados dinamicamente.
+
+\end{enumerate}
+
+\questionTitle{29}{Suficiência do tipo Int}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-tipos-int-integer-02}\\
+
+\end{flushright}
+Para qual dos seguintes valores o tipo \haskellinline{Int} é geralmente suficiente, não necessitando de \haskellinline{Integer}?
+
+\begin{enumerate}
+  \item A distância em milímetros entre duas galáxias.
+
+  \item A idade de uma pessoa.
+
+  \item O número de grãos de areia na Terra.
+
+  \item O resultado de \haskellinline{2 ^ 200}.
+
+  \item A população mundial.
+
+
+\end{enumerate}
+
+\questionTitle{30}{Erro por desalinhamento na regra de layout}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-layout-avaliacao-01}\\
+
+\end{flushright}
+Considere o trecho abaixo, no qual a segunda definição local não está alinhada com a primeira.
+
+\begin{haskellcode}
+f x = let a = x + 1
+        b = x + 2
+      in a + b
+\end{haskellcode}
+
+Qual é a causa do problema de sintaxe?
+
+\begin{enumerate}
+  \item O problema é que \haskellinline|in| deve aparecer antes de todas as definições do bloco.
+
+  \item Pela regra de layout, definições pertencentes ao mesmo bloco devem começar na mesma coluna; \haskellinline|b| deveria estar alinhado com \haskellinline|a|.
+
+  \item O problema é o uso de \haskellinline|let|; definições locais só podem ser feitas com \haskellinline|where|.
+
+  \item O problema é que Haskell ignora espaços em branco, então o compilador não consegue separar tokens.
+
+  \item O problema é o uso de \haskellinline|+| dentro de definições locais.
+
+
+\end{enumerate}
+
+\questionTitle{31}{Paralelismo Seguro}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{1: Paradigmas de programação}}\\
+  \textit{c01-engenharia-software-03}\\
+
+\end{flushright}
+No contexto de sistemas de alta disponibilidade executados em processadores \emph{multicore}, a programação funcional tem ganhado vasto espaço na indústria contemporânea. Qual característica fundacional do paradigma facilita imensamente a construção de programas paralelos livres de falhas?
+
+\begin{enumerate}
+  \item A tipagem dinâmica fraca da linguagem assegura que os processos em segundo plano reescrevam as estruturas de memória de forma atômica e sincronizada por meio do \emph{garbage collector}.
+
+  \item O paradigma impossibilita deliberadamente a criação de processos paralelos (sendo restrito a \emph{single-thread}), o que mitiga os erros de concorrência anulando a complexidade do escalonamento.
+
+  \item Os compiladores de linguagens funcionais traduzem nativamente o código para chamadas assíncronas de \emph{hardware} que contornam totalmente os barramentos lentos da memória principal.
+
+  \item A avaliação estrita das linguagens funcionais impõe um controle rígido ao escalonador do sistema operacional, forçando a distribuição milimétrica da carga da aplicação entre os núcleos físicos.
+
+  \item A imutabilidade dos dados combinada às funções puras garantem que múltiplas \emph{threads} não causarão \emph{race conditions} (condições de corrida) tentando modificar o mesmo espaço de memória simultaneamente.
+
+
+\end{enumerate}
+
+\questionTitle{32}{Compatibilidade dos ramos}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-if-regras-03}\\
+
+\end{flushright}
+Qual expressão abaixo é rejeitada porque os ramos \haskellinline|then| e \haskellinline|else| não produzem valores do mesmo tipo?
+
+\begin{enumerate}
+  \item \haskellinline|if odd 5 then 1 else 0|
+
+  \item \haskellinline|if odd 5 then 'i' else 'p'|
+
+  \item \haskellinline|if odd 5 then [1,2] else [3,4]|
+
+  \item \haskellinline|if odd 5 then "ímpar" else "par"|
+
+  \item \haskellinline|if odd 5 then "ímpar" else 0|
+
+
+\end{enumerate}
+
+\questionTitle{33}{Guarda sem cobertura completa}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{9: Funções recursivas}}\\
+  \textit{c09-fundamentos-cobertura-01}\\
+
+\end{flushright}
+Considere a definição:
+\begin{haskellcode}
+h :: Integer -> Integer
+h n
+  | n == 0 = 1
+  | n > 0  = n * h (n - 1)
+\end{haskellcode}
+Qual alternativa descreve corretamente o comportamento de \haskellinline|h (-2)|?
+
+\begin{enumerate}
+  \item Nenhuma guarda é satisfeita para \haskellinline|(-2)|; portanto, a avaliação falha por ausência de caso aplicável.
+
+  \item A avaliação entra em recursão infinita, pois a guarda \haskellinline|n > 0| também vale para negativos.
+
+  \item O resultado é \haskellinline|1|, pois a primeira guarda é usada para qualquer valor não positivo.
+
+  \item O resultado é \haskellinline|-2|, pois a função devolve o argumento quando ele é negativo.
+
+  \item Ocorre erro de tipo, pois guardas booleanas não podem ser usadas com \haskellinline|Integer|.
+
+
+\end{enumerate}
+
+\questionTitle{34}{Inferência de tipo de função composta}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-inferencia-funcao-01}\\
+
+\end{flushright}
+Considere a função definida por \haskellinline{f x = not (x > 0)}. Qual é o tipo inferido para \haskellinline{f}?
+
+\begin{enumerate}
+  \item \haskellinline{Int -> Bool}
+
+  \item \haskellinline{(Ord a, Num a) => a -> Bool}
+
+  \item \haskellinline{a -> Bool}
+
+  \item \haskellinline{Num a => a -> Bool}
+
+  \item \haskellinline{Double -> Bool}
+
+
+\end{enumerate}
+
+\questionTitle{35}{Assinatura em expressões}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-assinatura-expressao-01}\\
+
+\end{flushright}
+Por que a expressão \haskellinline{read "42"} sozinha causaria um erro de ambiguidade de tipo, enquanto \haskellinline{read "42" :: Int} é aceita?
+
+\begin{enumerate}
+  \item A anotação \haskellinline{:: Int} força a conversão da string para inteiro em tempo de execução.
+
+  \item \haskellinline{read} é sobrecarregada e pode retornar vários tipos; a anotação \haskellinline{:: Int} resolve a ambiguidade.
+
+  \item A anotação é necessária porque \haskellinline{read} é uma função parcial.
+
+  \item \haskellinline{read} só funciona com anotação de tipo; sem ela, ocorre um erro de sintaxe.
+
+  \item A anotação \haskellinline{:: Int} instrui o compilador a ignorar a inferência de tipos.
+
+
+\end{enumerate}
+
+\questionTitle{36}{Análise de IMC com where}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-where-avaliacao-03}\\
+
+\end{flushright}
+Considere a função:
+\begin{haskellcode}
+analisaIMC peso altura
+  | imc < 18.5 = "Abaixo"
+  | imc < 25.0 = "Normal"
+  | otherwise  = "Acima"
+  where
+    imc = peso / (altura * altura)
+\end{haskellcode}
+Qual é o resultado de \haskellinline|analisaIMC 80 2.0|?
+
+\begin{enumerate}
+  \item \haskellinline|"80.0"|
+
+  \item \haskellinline|"Abaixo"|
+
+  \item Ocorre um erro, pois variáveis definidas em \haskellinline|where| não podem aparecer nas guardas.
+
+  \item \haskellinline|"Normal"|
+
+  \item \haskellinline|"Acima"|
+
+
+\end{enumerate}
+
+\questionTitle{37}{Cons versus concatenação}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{6: Estruturas de dados básicas}}\\
+  \textit{c06-listas-estrutura-03}\\
+
+\end{flushright}
+Qual afirmação descreve corretamente a diferença entre \haskellinline{(:)} e \haskellinline{(++)}?
+
+\begin{enumerate}
+  \item \haskellinline{(++)} adiciona um elemento à lista, enquanto \haskellinline{(:)} exige duas listas como argumentos.
+
+  \item \haskellinline{(:)} adiciona um elemento ao início de uma lista, enquanto \haskellinline{(++)} concatena duas listas.
+
+  \item \haskellinline{(:)} adiciona um elemento ao final da lista, enquanto \haskellinline{(++)} adiciona ao início.
+
+  \item \haskellinline{(:)} e \haskellinline{(++)} sempre produzem exatamente o mesmo efeito, mudando apenas a sintaxe.
+
+  \item \haskellinline{(:)} concatena listas mais rapidamente do que \haskellinline{(++)}, mas exige listas do mesmo tamanho.
+
+
+\end{enumerate}
+
+\questionTitle{38}{Finalidade da cláusula where}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-definicoes-where-01}\\
+
+\end{flushright}
+Qual alternativa descreve corretamente o papel da cláusula \haskellinline|where| em uma definição Haskell?
+
+\begin{enumerate}
+  \item Ela introduz uma expressão que pode ser escrita livremente em qualquer posição onde um literal seria permitido.
+
+  \item Ela serve exclusivamente para importar nomes de outros módulos.
+
+  \item Ela anexa definições locais a uma equação, permitindo nomear subexpressões auxiliares no escopo dessa definição.
+
+  \item Ela torna todas as definições auxiliares visíveis globalmente no módulo.
+
+  \item Ela substitui a necessidade do sinal de igualdade em definições de funções.
+
+
+\end{enumerate}
+
+\questionTitle{39}{Média de sequência vazia}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{10: Ações de E/S recursivas}}\\
+  \textit{c10-bordas-robustez-03}\\
+
+\end{flushright}
+Considere o padrão usado no exercício da média:
+
+\begin{haskellcode}
+main :: IO ()
+main = do
+  lista <- lerLista
+  print (sum lista / fromIntegral (length lista))
+
+lerLista :: IO [Double]
+lerLista = do
+  x <- readLn
+  if x < 0
+    then return []
+    else do
+      xs <- lerLista
+      return (x:xs)
+\end{haskellcode}
+
+Qual caso de borda precisa ser tratado explicitamente?
+
+\begin{enumerate}
+  \item A lista com um único valor, pois \haskellinline|sum| não funciona com listas unitárias.
+
+  \item A presença de zero na lista, pois zero é sempre interpretado como sentinela nessa função.
+
+  \item Qualquer lista com valores positivos, pois \haskellinline|fromIntegral| só aceita números negativos.
+
+  \item A lista em ordem crescente, pois \haskellinline|sum| exige que a entrada esteja ordenada.
+
+  \item A sequência vazia, pois se o primeiro valor digitado for negativo, \haskellinline|length lista| será zero e a média não estará bem definida.
+
+
+\end{enumerate}
+
+\questionTitle{40}{Paradigmas - Característica Fundamental (Legado Refatorado)}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{1: Paradigmas de programação}}\\
+  \textit{c01-conceitos-paradigmas-01}\\
+
+\end{flushright}
+Qual das seguintes características é a mais fundamental para definir uma linguagem como \textbf{puramente funcional}?
+
+\begin{enumerate}
+  \item O tratamento de funções como valores de primeira classe e a total ausência de efeitos colaterais.
+
+  \item O uso de ponteiros abstratos para a manipulação direta e manual da memória pelo programador.
+
+  \item A capacidade de usar laços imperativos nativos como \cinline|for| e \cinline|while|.
+
+  \item A ausência completa de um sistema de tipos estático.
+
+  \item A obrigatoriedade de usar o paradigma de orientação a objetos para gerenciar o estado da aplicação.
+
+
+\end{enumerate}
+
+\questionTitle{41}{Declaração de sinônimo de tipo}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-sinonimos-criacao-01}\\
+
+\end{flushright}
+Qual palavra-chave é usada para criar um sinônimo de tipo em Haskell?
+
+\begin{enumerate}
+  \item \haskellinline{data}
+
+  \item \haskellinline{instance}
+
+  \item \haskellinline{type}
+
+  \item \haskellinline{class}
+
+  \item \haskellinline{newtype}
+
+
+\end{enumerate}
+
+\questionTitle{42}{String vs IO String}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{8: Programas interativos}}\\
+  \textit{c08-tipos-acoes-03}\\
+
+\end{flushright}
+Considere o trecho:
+
+\begin{minted}{haskell}
+nome = getLine
+\end{minted}
+
+Sem nenhuma outra informação de contexto, qual é o tipo de \haskellinline|nome|?
+
+\begin{enumerate}
+  \item \haskellinline|IO String|, pois \haskellinline|getLine| é uma ação de E/S que, quando executada, produz uma \haskellinline|String|.
+
+  \item \haskellinline|Char|, pois a entrada padrão lê apenas um caractere por vez.
+
+  \item \haskellinline|String -> IO String|, pois \haskellinline|getLine| precisa receber o prompt como argumento.
+
+  \item \haskellinline|String|, pois \haskellinline|getLine| já executa a leitura no momento da definição.
+
+  \item \haskellinline|IO ()|, pois toda ação de E/S sempre produz o valor unitário.
+
+
+\end{enumerate}
+
+\questionTitle{43}{Modelagem composta de pedidos}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{6: Estruturas de dados básicas}}\\
+  \textit{c06-modelagem-03}\\
+
+\end{flushright}
+Qual tipo representa melhor uma coleção de pedidos em que cada pedido possui o nome do cliente, a lista de itens comprados e um total opcional?
+
+\begin{enumerate}
+  \item \haskellinline{Maybe [(String, Int, Double)]}
+
+  \item \haskellinline{[(String, [(String, Int)], Maybe Double)]}
+
+  \item \haskellinline{([String], [Int], [Double])}
+
+  \item \haskellinline{[String, [(String, Int)], Maybe Double]}
+
+  \item \haskellinline{(String, [String], Double)}
+
+
+\end{enumerate}
+
+\questionTitle{44}{Composição de funções paramétricas em listas}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-param-head-tail-tipo}\\
+
+\end{flushright}
+Qual é a assinatura de tipo mais geral da função abaixo?
+
+\begin{minted}{haskell}
+f xs = head (tail xs)
+\end{minted}
+
+\begin{enumerate}
+  \item \mintinline{haskell}{f :: [a] -> [a]}
+  \item \mintinline{haskell}{f :: Ord a => [a] -> a}
+  \item \mintinline{haskell}{f :: [a] -> a}
+  \item \mintinline{haskell}{f :: [[a]] -> [a]}
+  \item \mintinline{haskell}{f :: Num a => [a] -> a}
+
+\end{enumerate}
+
+\questionTitle{45}{O ciclo prático de edição e recarregamento}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{2: Ambiente de desenvolvimento}}\\
+  \textit{c02-fluxo-trabalho-01}\\
+
+\end{flushright}
+Qual das seguintes sequências descreve adequadamente o fluxo de trabalho (\emph{workflow}) mais ágil e recomendado para o desenvolvimento de programas locais usando Haskell e GHCi?
+
+\begin{enumerate}
+  \item Modificar o arquivo \texttt{.hs} no editor $\rightarrow$ Fechar o GHCi $\rightarrow$ Invocar o compilador GHC na linha de comando para gerar um novo pacote executável $\rightarrow$ Testar o binário.
+
+  \item Editar o código-fonte em um editor externo e salvá-lo $\rightarrow$ Usar o comando \texttt{:reload} (ou \texttt{:r}) no GHCi já aberto $\rightarrow$ Testar a nova função iterativamente.
+
+  \item Digitar o comando \texttt{:load} no editor VS Code $\rightarrow$ Modificar a função $\rightarrow$ Enviar a compilação final para o GitHub Classroom rodar as ferramentas de análise.
+
+  \item Reescrever todo o código no GHCi $\rightarrow$ Digitar o comando de exportação de binário $\rightarrow$ Rodar o \emph{script} nativo em C.
+
+  \item Editar as funções diretamente dentro do GHCi através da declaração múltipla $\rightarrow$ Encerrar o GHCi com \texttt{:quit} $\rightarrow$ Reabrir o terminal para que as alterações sejam gravadas no disco.
+
+
+\end{enumerate}
+
+\questionTitle{46}{A variável automática it no GHCi}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-ghci-definicoes-01}\\
+
+\end{flushright}
+Considere a seguinte sessão no GHCi.
+
+\begin{haskellcode}
+> 2 + 3 * 4
+14
+> 7 * (it - 4)
+70
+> it
+\end{haskellcode}
+
+Qual valor será exibido na última linha?
+
+\begin{enumerate}
+  \item \haskellinline|2 + 3 * 4|.
+
+  \item \haskellinline|14|.
+
+  \item \haskellinline|10|.
+
+  \item \haskellinline|70|.
+
+  \item O GHCi produz erro, pois \haskellinline|it| só pode ser usado uma vez.
+
+
+\end{enumerate}
+
+\questionTitle{47}{Conflito de classes em checagem estática}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-checagem-conflito-01}\\
+
+\end{flushright}
+Considere o código \haskellinline{calculo x y = (x / 2) `div` y}. Por que este código falha na compilação?
+
+\begin{enumerate}
+  \item A notação infixa com crases não pode ser usada com operadores simbólicos.
+
+  \item Falta uma anotação de tipo explícita, impedindo a inferência.
+
+  \item O operador \haskellinline{/} exige um tipo fracionário (\haskellinline{Fractional}), mas \haskellinline{div} exige um tipo integral (\haskellinline{Integral}), causando um conflito de tipos.
+
+  \item O literal \haskellinline{2} é inferido como \haskellinline{Integer}, que não é compatível com \haskellinline{x}.
+
+  \item A função \haskellinline{div} tem maior precedência que \haskellinline{/}.
+
+
+\end{enumerate}
+
+\questionTitle{48}{Identificando tipos vs. variáveis}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-conceito-nomes-02}\\
+
+\end{flushright}
+Considere os identificadores: \haskellinline{Pessoa} e \haskellinline{pessoa}. Qual é a interpretação mais provável em Haskell?
+
+\begin{enumerate}
+  \item Ambos são tipos, sendo \haskellinline{pessoa} um sinônimo.
+
+  \item \haskellinline{Pessoa} é um tipo (ou construtor de dados) e \haskellinline{pessoa} é uma variável ou função.
+
+  \item \haskellinline{Pessoa} é uma variável global e \haskellinline{pessoa} é uma variável local.
+
+  \item Ambos são variáveis, mas com escopos diferentes.
+
+  \item Não há diferença; Haskell não distingue maiúsculas de minúsculas.
+
+
+\end{enumerate}
+
+\questionTitle{49}{Declaração de módulo em arquivo fonte}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-arquivos-identificadores-01}\\
+
+\end{flushright}
+Qual alternativa apresenta uma declaração de módulo bem formada para o início de um arquivo Haskell?
+
+\begin{enumerate}
+  \item \haskellinline|module Geometria =|.
+
+  \item \haskellinline|import module Geometria where|.
+
+  \item \haskellinline|module geometria where|.
+
+  \item \haskellinline|module Geometria where|.
+
+  \item \haskellinline|where module Geometria|.
+
+
+\end{enumerate}
+
+\questionTitle{50}{A inovação do Sistema de Tipos da ML}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{1: Paradigmas de programação}}\\
+  \textit{c01-historia-evolucao-03}\\
+
+\end{flushright}
+Na década de 1970, o pesquisador Robin Milner e sua equipe desenvolveram a linguagem ML (\emph{MetaLanguage}), projetada inicialmente para apoiar a demonstração automática de teoremas. A linguagem ML legou um avanço formidável, hoje presente fortemente em Haskell e linguagens como Rust e Swift. Qual foi essa inovação técnica?
+
+\begin{enumerate}
+  \item A introdução e formalização das \textbf{Mônadas} na biblioteca padrão como a única abstração autorizada pelo compilador para isolar e manipular efeitos de entrada e saída.
+
+  \item A arquitetura inovadora do compilador \textbf{JIT} (\emph{Just-in-Time Compiler}), que otimizou o código funcional para superar a velocidade dos programas escritos em linguagem C de forma absoluta.
+
+  \item O mecanismo de \textbf{Avaliação Preguiçosa} estrita, que impedia o cálculo precipitado de matrizes infinitas e protegia os \emph{mainframes} contra falhas de estouro de memória.
+
+  \item Um sistema de \textbf{inferência de tipos} elegante e poderoso, capaz de garantir a segurança estática sem exigir que o programador preenchesse o código com anotações manuais redundantes de tipos.
+
+  \item A invenção pioneira da \textbf{Orientação a Objetos}, que permitiu à indústria mesclar funções puras com o encapsulamento hermético de estado dentro de classes herdáveis.
+
+
+\end{enumerate}
+
+\questionTitle{51}{Restrição Read e necessidade de contexto}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{7: Polimorfismo}}\\
+  \textit{cap07-adhoc-read-contexto}\\
+
+\end{flushright}
+A função \haskellinline{read} tem assinatura:
+
+\begin{minted}{haskell}
+read :: Read a => String -> a
+\end{minted}
+
+Qual uso deixa claro para o compilador que o resultado deve ser um \haskellinline{Int}?
+
+\begin{enumerate}
+  \item \mintinline{haskell}{read "10" :: Int}
+  \item \mintinline{haskell}{read "10" :: String -> Int}
+  \item \mintinline{haskell}{read :: "10" -> Int}
+  \item \mintinline{haskell}{show (read "10")}
+  \item \mintinline{haskell}{length (read "10")}
+
+\end{enumerate}
+
+\questionTitle{52}{Classificação por faixas}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-guardas-avaliacao-03}\\
+
+\end{flushright}
+Analise a definição:
+\begin{haskellcode}
+conceito n
+  | n >= 9    = "A"
+  | n >= 7    = "B"
+  | n >= 5    = "C"
+  | otherwise = "D"
+\end{haskellcode}
+Qual é o resultado de \haskellinline|conceito 7.5|?
+
+\begin{enumerate}
+  \item \haskellinline|"C"|
+
+  \item \haskellinline|"D"|
+
+  \item \haskellinline|"A"|
+
+  \item Ocorre um erro de tipos, pois as guardas usam números decimais.
+
+  \item \haskellinline|"B"|
+
+
+\end{enumerate}
+
+\questionTitle{53}{Acumuladores e avaliação preguiçosa}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{9: Funções recursivas}}\\
+  \textit{c09-eficiencia-thunks-01}\\
+
+\end{flushright}
+Em Haskell, por que uma função com acumulador ainda pode consumir mais memória do que o esperado?
+
+\begin{enumerate}
+  \item Porque a avaliação preguiçosa pode adiar o cálculo do acumulador, formando expressões suspensas, ou \emph{thunks}.
+
+  \item Porque Haskell não permite que acumuladores sejam avaliados.
+
+  \item Porque funções com acumulador não podem ter casos base.
+
+  \item Porque o tipo \haskellinline|Integer| impede qualquer otimização do compilador.
+
+  \item Porque acumuladores são sempre armazenados como listas infinitas.
+
+
+\end{enumerate}
+
+\questionTitle{54}{Construção e execução de ações}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{8: Programas interativos}}\\
+  \textit{c08-modelo-io-03}\\
+
+\end{flushright}
+Considere a definição:
+
+\begin{minted}{haskell}
+saudacao :: IO ()
+saudacao = putStrLn "Olá!"
+\end{minted}
+
+O que essa definição faz no momento em que o módulo é carregado?
+
+\begin{enumerate}
+  \item Ela executa a ação uma vez e guarda o resultado textual \haskellinline|"Olá!"| para reutilização futura.
+
+  \item Ela define uma função pura do tipo \haskellinline|String -> String| que transforma a mensagem antes de imprimi-la.
+
+  \item Ela cria uma exceção, pois \haskellinline|putStrLn| só pode aparecer diretamente dentro de \haskellinline|main|.
+
+  \item Ela imprime imediatamente \haskellinline|"Olá!"|, pois toda definição de tipo \haskellinline|IO ()| é executada ao carregar o módulo.
+
+  \item Ela associa o nome \haskellinline|saudacao| a uma ação de E/S. A mensagem só será impressa quando essa ação for executada.
+
+
+\end{enumerate}
+
+\questionTitle{55}{Papel de where em guardas}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-where-escopo-03}\\
+
+\end{flushright}
+Qual é a principal vantagem de usar \haskellinline|where| em uma definição com guardas, como no cálculo de \haskellinline|delta| em uma função que determina o número de raízes de uma equação?
+
+\begin{enumerate}
+  \item Tornar a função automaticamente polimórfica.
+
+  \item Garantir que todas as guardas sejam exaustivas.
+
+  \item Permitir nomear um cálculo local e reutilizá-lo em guardas e resultados, evitando repetição.
+
+  \item Permitir que a função tenha ramos com tipos diferentes.
+
+  \item Fazer com que as guardas sejam avaliadas em paralelo.
+
+
+\end{enumerate}
+
+\questionTitle{56}{let não executa getLine}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{8: Programas interativos}}\\
+  \textit{c08-blocos-do-03}\\
+
+\end{flushright}
+Considere:
+
+\begin{minted}{haskell}
+saudacao :: IO ()
+saudacao = do
+  putStrLn "Qual o seu nome?"
+  let nome = getLine
+  putStrLn "Olá!"
+\end{minted}
+
+O que acontece quando \haskellinline|saudacao| é executada?
+
+\begin{enumerate}
+  \item O programa não compila, pois \haskellinline|let| é sintaticamente proibido dentro de \haskellinline|do|.
+
+  \item O programa imprime a pergunta, aguarda o nome e imprime \haskellinline|"Olá!"|.
+
+  \item O programa imprime a pergunta e depois imprime \haskellinline|"Olá!"|, mas não aguarda a digitação do nome. A linha com \haskellinline|let| apenas associa \haskellinline|nome| à ação \haskellinline|getLine|.
+
+  \item O programa imprime a ação \haskellinline|getLine| como texto antes de imprimir \haskellinline|"Olá!"|.
+
+  \item O programa entra em laço infinito porque \haskellinline|getLine| fica esperando entrada indefinidamente.
+
+
+\end{enumerate}
+
+\questionTitle{57}{Saída produzida por mostraLista}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{10: Ações de E/S recursivas}}\\
+  \textit{c10-rastreamento-03}\\
+
+\end{flushright}
+Considere:
+
+\begin{haskellcode}
+mostraLista :: Show a => [a] -> IO ()
+mostraLista lista
+  | null lista = return ()
+  | otherwise = do
+      print (head lista)
+      mostraLista (tail lista)
+\end{haskellcode}
+
+Qual é a saída de \haskellinline|mostraLista [2,4,6]|?
+
+\begin{enumerate}
+  \item Apenas \haskellinline|2| é impresso, pois a chamada recursiva é ignorada.
+
+  \item Os valores \haskellinline|6|, \haskellinline|4| e \haskellinline|2| são impressos, um por linha.
+
+  \item Nada é impresso, pois a função retorna \haskellinline|()|.
+
+  \item \haskellinline|[2,4,6]| em uma única linha.
+
+  \item Os valores \haskellinline|2|, \haskellinline|4| e \haskellinline|6| são impressos, um por linha, nessa ordem.
+
+
+\end{enumerate}
+
+\questionTitle{58}{GHCup e gerenciamento de ambiente}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{2: Ambiente de desenvolvimento}}\\
+  \textit{c02-ecossistema-ferramentas-01}\\
+
+\end{flushright}
+No ecossistema moderno da linguagem Haskell, qual é o papel exato da ferramenta \textbf{GHCup}?
+
+\begin{enumerate}
+  \item Fornecer a interface gráfica e o editor de texto oficial recomendado pela comunidade para programação Haskell.
+
+  \item Converter automaticamente o código-fonte escrito em arquivos \texttt{.hs} para binários otimizados da linguagem C.
+
+  \item Servir como o interpretador \emph{REPL} principal para testar e avaliar expressões matemáticas interativamente.
+
+  \item Hospedar repositórios de código-fonte na nuvem, similar ao GitHub, mas com foco exclusivo em bibliotecas funcionais.
+
+  \item Atuar como um instalador unificado que gerencia as versões do compilador GHC, da ferramenta de \emph{build} Cabal e do servidor de linguagem HLS.
+
+
+\end{enumerate}
+
+\questionTitle{59}{Guardas sobrepostas}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-guardas-sintaxe-semantica-03}\\
+
+\end{flushright}
+Considere a função:
+\begin{haskellcode}
+f x
+  | x > 0     = 1
+  | x > 10    = 2
+  | otherwise = 3
+\end{haskellcode}
+Qual é o valor de \haskellinline|f 20|?
+
+\begin{enumerate}
+  \item O compilador rejeita a função, pois as guardas se sobrepõem.
+
+  \item Ocorre um erro, pois duas guardas são verdadeiras.
+
+  \item \haskellinline|3|
+
+  \item \haskellinline|2|
+
+  \item \haskellinline|1|
+
+
+\end{enumerate}
+
+\questionTitle{60}{Rastreamento do fatorial com acumulador}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{9: Funções recursivas}}\\
+  \textit{c09-cauda-fat-01}\\
+
+\end{flushright}
+Considere:
+\begin{haskellcode}
+fat' n x
+  | n == 0 = x
+  | n > 0  = fat' (n - 1) (n * x)
+\end{haskellcode}
+Qual é a próxima chamada feita por \haskellinline|fat' 5 2|?
+
+\begin{enumerate}
+  \item \haskellinline|fat' 4 2|
+
+  \item \haskellinline|fat' 10 4|
+
+  \item \haskellinline|fat' 4 10|
+
+  \item \haskellinline|fat' 0 240|
+
+  \item \haskellinline|fat' 5 10|
+
+
+\end{enumerate}
+
+\questionTitle{61}{NoBuffering}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{8: Programas interativos}}\\
+  \textit{c08-buffering-03}\\
+
+\end{flushright}
+Qual é o efeito de executar a ação abaixo no início de um programa?
+
+\begin{minted}{haskell}
+hSetBuffering stdout NoBuffering
+\end{minted}
+
+\begin{enumerate}
+  \item Ela impede que o programa escreva na saída padrão.
+
+  \item Ela faz com que a entrada padrão seja lida caractere por caractere.
+
+  \item Ela configura a saída padrão para não manter conteúdo em \emph{buffer}, fazendo com que as saídas sejam enviadas imediatamente.
+
+  \item Ela converte todo texto impresso para maiúsculas.
+
+  \item Ela configura \haskellinline|stdout| para ler dados de um arquivo.
+
+
+\end{enumerate}
+
+\questionTitle{62}{Leitura de quantidade fixa com n não positivo}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{10: Ações de E/S recursivas}}\\
+  \textit{c10-lacos-io-03}\\
+
+\end{flushright}
+Analise a função:
+
+\begin{haskellcode}
+leLista :: Integer -> IO [Integer]
+leLista n
+  | n <= 0    = return []
+  | otherwise = do
+      x <- readLn
+      xs <- leLista (n - 1)
+      return (x:xs)
+\end{haskellcode}
+
+Se \haskellinline|leLista (-2)| for executada, o que acontece?
+
+\begin{enumerate}
+  \item O programa falha por erro de tipo, pois \haskellinline|Integer| não pode ser comparado com zero.
+
+  \item Nenhum valor é lido; a ação produz a lista vazia por meio de \haskellinline|return []|.
+
+  \item A função devolve \haskellinline|[-2]|, pois o valor inicial de \haskellinline|n| é incluído na lista.
+
+  \item A função entra em recursão infinita, pois \haskellinline|n| nunca se torna igual a zero.
+
+  \item A função tenta ler dois valores e depois devolve uma lista vazia.
+
+
+\end{enumerate}
+
+\questionTitle{63}{Comentários de linha e de bloco}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{3: Expressões e definições}}\\
+  \textit{c03-comentarios-valores-01}\\
+
+\end{flushright}
+Assinale a alternativa que descreve corretamente a sintaxe de comentários em Haskell.
+
+\begin{enumerate}
+  \item Comentários de bloco em Haskell não podem conter outros comentários de bloco em seu interior.
+
+  \item Comentários são avaliados pelo GHCi como expressões do tipo \haskellinline|String|.
+
+  \item Comentários de linha e comentários de bloco só podem aparecer antes da declaração de módulo.
+
+  \item Um comentário iniciado por \haskellinline|--| deve ser fechado com \haskellinline|--| antes do fim da linha.
+
+  \item Um comentário iniciado por \haskellinline|--| vai até o fim da linha, enquanto um comentário delimitado por \haskellinline|{-| e \haskellinline|-\}| pode ocupar várias linhas e pode ser aninhado.
+
+
+\end{enumerate}
+
+\questionTitle{64}{A onipresença do Prelude}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{2: Ambiente de desenvolvimento}}\\
+  \textit{c02-ghci-modulos-01}\\
+
+\end{flushright}
+No ambiente GHCi, é possível utilizar funções matemáticas como \haskellinline{sqrt} ou operadores como \haskellinline{+} imediatamente após abrir o terminal, sem a necessidade de comandos adicionais. Qual é a justificativa técnica para isso?
+
+\begin{enumerate}
+  \item Essas funções não pertencem a nenhum módulo; elas são palavras-chave imutáveis encravadas no analisador léxico (\emph{parser}) do compilador.
+
+  \item Linguagens funcionais não requerem bibliotecas de base, pois todas as operações aritméticas são resolvidas diretamente pelo \emph{hardware} da CPU.
+
+  \item O GHCi carrega automaticamente, por padrão, o módulo especial \texttt{Prelude}, que contém um grande conjunto de funções e tipos básicos.
+
+  \item O GHCi possui um recurso de compilação JIT que adivinha a intenção do programador e cria as funções matemáticas em tempo de execução.
+
+  \item O comando \texttt{ghci} faz uma varredura no disco rígido buscando qualquer arquivo \texttt{.hs} pré-existente e importa todas as funções encontradas silenciosamente.
+
+
+\end{enumerate}
+
+\questionTitle{65}{Equivalência entre if e guardas}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{5: Expressão condicional}}\\
+  \textit{c05-if-vs-guardas-03}\\
+
+\end{flushright}
+Qual definição com guardas é equivalente à função abaixo?
+\begin{haskellcode}
+max2 x y = if x > y then x else y
+\end{haskellcode}
+
+\begin{enumerate}
+  \item \begin{haskellcode}
+max2 x y
+  | x >= y    = y
+  | otherwise = x
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+max2 x y = if x > y then y else x
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+max2 x y
+  | x < y     = x
+  | otherwise = y
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+max2 x y
+  | x > y     = x
+  | otherwise = y
+\end{haskellcode}
+
+  \item \begin{haskellcode}
+max2 x y
+  | x > y     = True
+  | otherwise = False
+\end{haskellcode}
+
+
+\end{enumerate}
+
+\questionTitle{66}{Rastreamento de recursividade mútua}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{9: Funções recursivas}}\\
+  \textit{c09-formas-mutua-01}\\
+
+\end{flushright}
+Considere:
+\begin{haskellcode}
+par n | n == 0 = True
+      | otherwise = impar (n - 1)
+
+impar n | n == 0 = False
+        | otherwise = par (n - 1)
+\end{haskellcode}
+Qual é o valor de \haskellinline|par 5|?
+
+\begin{enumerate}
+  \item \haskellinline|True|
+
+  \item \haskellinline|False|
+
+  \item erro de tipo
+
+  \item não termina
+
+  \item \haskellinline|5|
+
+
+\end{enumerate}
+
+\questionTitle{67}{Enumeração com passo e consumo finito}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{6: Estruturas de dados básicas}}\\
+  \textit{c06-listas-operacoes-03}\\
+
+\end{flushright}
+Considere a expressão:
+\begin{minted}{haskell}
+take 3 [2, 2 + 5 ..]
+\end{minted}
+Qual é o seu resultado?
+
+\begin{enumerate}
+  \item \haskellinline{ [2,7,12] }
+
+  \item \haskellinline{ [2,5,10] }
+
+  \item \haskellinline{ [7,12,17] }
+
+  \item A expressão produz a lista infinita completa antes de aplicar \haskellinline{take}.
+
+  \item \haskellinline{ [2,7] }
+
+
+\end{enumerate}
+
+\questionTitle{68}{Separação entre leitura e soma pura}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{10: Ações de E/S recursivas}}\\
+  \textit{c10-separacao-puro-01}\\
+
+\end{flushright}
+Considere a versão que separa a leitura da soma:
+
+\begin{haskellcode}
+main :: IO ()
+main = do
+  lista <- lerLista
+  print (sum lista)
+
+lerLista :: IO [Integer]
+lerLista = do
+  x <- readLn
+  if x == 0
+    then return []
+    else do
+      resto <- lerLista
+      return (x:resto)
+\end{haskellcode}
+
+Qual é a principal vantagem dessa organização?
+
+\begin{enumerate}
+  \item Ela obriga o compilador a transformar \haskellinline|lerLista| em um laço imperativo.
+
+  \item Ela elimina completamente o uso de \haskellinline|IO| do programa.
+
+  \item Ela evita a necessidade de um caso base, pois \haskellinline|sum| detecta automaticamente o sentinela.
+
+  \item Ela faz com que \haskellinline|sum| leia diretamente os números do teclado.
+
+  \item Ela isola a interação com o usuário em \haskellinline|lerLista| e permite que o processamento, como \haskellinline|sum lista|, permaneça puro.
+
+
+\end{enumerate}
+
+\questionTitle{69}{Inferência de literais no GHCi (parametrizado)}
+\begin{flushright}
+  \footnotesize
+  \textit{\textbf{4: Tipos de Dados}}\\
+  \textit{c04-ghci-inferencia-01}\\
+
+\end{flushright}
+Qual tipo o GHCi inferiria para o literal \haskellinline{3.14 } ao usar o comando \texttt{:type}?
+
+\begin{enumerate}
+  \item Ocorre um erro de sintaxe.
+
+  \item \haskellinline{Num a => a}
+
+  \item \haskellinline{Double}
+
+  \item \haskellinline{Float}
+
+  \item \haskellinline{Fractional a => a}
+
+
+\end{enumerate}
+
+
+\end{multicols}
+\makeanswersheet{UFOP}{BCC222: Programação Funcional}{José Romildo}{2026/1}{Primeira Prova}{08}{69}{25}{7}
+\gabarito{08}{B,C,B,D,B,B,B,C,C,A,E,C,B,B,A,E,E,C,A,A,B,C,E,D,C,D,E,A,B,B,E,E,A,B,B,D,B,C,E,A,C,A,B,C,B,D,C,B,D,D,A,E,A,E,C,C,E,E,E,C,C,B,E,C,D,B,A,E,E}
+\end{document}

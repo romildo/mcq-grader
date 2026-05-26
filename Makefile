@@ -10,12 +10,18 @@ SCRIPTS_DIR     := scripts
 
 # Base directory and prefix for the exam files
 EXAMS_DIR       := sample-data/exams
-EXAM_PREFIX     := $(EXAMS_DIR)/EE1
+EXAM_PREFIX     := $(EXAMS_DIR)/E1
 
 # LaTeX source files for the answer sheet template
-LATEX_SRC       := EE1-01.tex
+LATEX_SRC       := E1-01.tex
 STYLE_FILE      := $(EXAMS_DIR)/provastyle.sty
 LATEX_BASE      := $(basename $(LATEX_SRC))
+
+# Additional latexmk flags. The bundled ExamForge sample uses minted.
+LATEXMK_FLAGS   ?= -shell-escape
+
+# Let LaTeX find style files stored beside the exam sources.
+LATEX_INPUTS    ?= $(EXAMS_DIR)//:
 
 # Output and cache directories
 BUILD_DIR       := $(EXAMS_DIR)/_build
@@ -26,12 +32,7 @@ CACHE_DIR       := $(EXAMS_DIR)/image-cache
 PADDING         ?= 10
 THRESHOLD       ?= 1000
 CONF_RATIO      ?= 0.7
-
-# Additional latexmk flags. The bundled ExamForge sample uses minted.
-LATEXMK_FLAGS   ?= -shell-escape
-
-# Let LaTeX find style files stored beside the exam sources.
-LATEX_INPUTS    ?= $(EXAMS_DIR)//:
+REG_CONF_RATIO  ?= 0.8
 
 # --- Key Source Files (Inputs) ---
 ZONES_JSON      := $(EXAM_PREFIX).zones.json
@@ -102,7 +103,8 @@ $(RESULTS_CSV): $(ZONES_JSON) $(ANSWER_SHEETS_PDF) $(TEMPLATE_PDF) $(SCRIPTS_DIR
 		--student-sheets-pdf $(ANSWER_SHEETS_PDF) \
 		--padding=$(PADDING) \
 		--threshold=$(THRESHOLD) \
-		--confidence-ratio=$(CONF_RATIO)
+		--confidence-ratio=$(CONF_RATIO) \
+		--registration-confidence-ratio=$(REG_CONF_RATIO)
 
 # 3. Generate the visual verification PDF
 $(VERIFICATION_PDF): $(ZONES_JSON) $(ANSWER_SHEETS_PDF) $(TEMPLATE_PDF) $(SCRIPTS_DIR)/verify_zones.py $(SCRIPTS_DIR)/omr_utils.py
@@ -128,7 +130,7 @@ $(MAIN_PDF): $(EXAMS_DIR)/$(LATEX_SRC) $(STYLE_FILE)
 	@echo "--> Compiling main LaTeX document..."
 	@mkdir -p $(BUILD_DIR)
 	TEXINPUTS="$(LATEX_INPUTS)" TEXMF_OUTPUT_DIRECTORY="$(BUILD_DIR)" \
-	    latexmk -pdf $(LATEXMK_FLAGS) -lualatex \
+	    latexmk -lualatex $(LATEXMK_FLAGS) \
 		-output-directory=$(BUILD_DIR) \
 		$(EXAMS_DIR)/$(LATEX_SRC)
 

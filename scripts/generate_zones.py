@@ -5,10 +5,12 @@ import math
 import sys
 import os
 import json
+import subprocess
 
 # --- CONSTANTS ---
 DPI = 300
 SP_PER_INCH = 72.27 * 65536  # TeX scaled points per inch
+
 
 def sp_to_pixels(sp_val, page_height_px=None):
     """Converts coordinates from TeX's 'sp' unit to pixels."""
@@ -19,14 +21,104 @@ def sp_to_pixels(sp_val, page_height_px=None):
         return page_height_px - px
     return px
 
+
+def rect_from_position(pos):
+    """Returns [x, y, w, h] from a converted LaTeX position record."""
+    return [
+        math.ceil(pos['x']),
+        math.ceil(pos['y'] - pos['h']),
+        math.ceil(pos['w']),
+        math.ceil(pos['h']),
+    ]
+
+
+def find_page_height_sp(aux_file, positions_sp):
+    """Finds the page height in TeX scaled points.
+
+    Older templates may provide a synthetic 'page-1.height' zref label. Newer
+    ExamForge templates generally do not, so we fall back to the LaTeX log and,
+    finally, to the generated PDF metadata if available.
+    """
+    page_height_sp = positions_sp.get('page-1.height', {}).get('y')
+    if page_height_sp:
+        return page_height_sp
+
+    print("Warning: 'page-1.height' not found in .aux file. Attempting to get height from .log file...")
+    log_file_path = os.path.splitext(aux_file)[0] + '.log'
+    try:
+        with open(log_file_path, 'r', errors='ignore') as f:
+            log_content = f.read()
+        match = re.search(r"\\paperheight=([\d.]+)pt", log_content)
+        if match:
+            paper_height_pt = float(match.group(1))
+            print(f"  -> Found page height in .log: {paper_height_pt}pt")
+            return paper_height_pt * 65536
+    except FileNotFoundError:
+        print(f"  -> Warning: .log file not found at '{log_file_path}'.")
+
+    pdf_file_path = os.path.splitext(aux_file)[0] + '.pdf'
+    if os.path.exists(pdf_file_path):
+        print(f"  -> Attempting to get page height from PDF metadata: {pdf_file_path}")
+        try:
+            result = subprocess.run(
+                ['pdfinfo', pdf_file_path],
+                check=True,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            match = re.search(r"Page size:\s+[\d.]+\s+x\s+([\d.]+)\s+pts", result.stdout)
+            if match:
+                # pdfinfo reports PDF points (bp, 1/72 inch), while zref
+                # coordinates use TeX points (pt, 1/72.27 inch). Convert the
+                # PDF media-box height back to TeX pt before converting to sp.
+                paper_height_bp = float(match.group(1))
+                paper_height_pt = paper_height_bp * (72.27 / 72)
+                print(f"  -> Found page height in PDF: {paper_height_bp}bp ({paper_height_pt:.5f}pt)")
+                return paper_height_pt * 65536
+        except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+            print(f"  -> Warning: Could not read PDF page size with pdfinfo: {exc}")
+
+    return None
+
+
+def build_registration_bubbles(registration_digits, positions_px):
+    """Builds a registration-bubble grid from id_<position>_<digit> labels."""
+    if registration_digits <= 0:
+        return None
+
+    bubbles = []
+    missing_labels = []
+
+    for digit_pos in range(1, registration_digits + 1):
+        column = []
+        for digit in range(10):
+            label = f'id_{digit_pos}_{digit}'
+            if label not in positions_px:
+                missing_labels.append(label)
+                continue
+            column.append(rect_from_position(positions_px[label]))
+        bubbles.append(column)
+
+    if missing_labels:
+        print("\nERROR: Registration bubble metadata is incomplete:", file=sys.stderr)
+        for label in missing_labels:
+            print(f"  - Label '{label}' missing from .aux/.zones files.", file=sys.stderr)
+        print("\nPlease check your .tex and .sty files.", file=sys.stderr)
+        sys.exit(1)
+
+    return bubbles
+
+
 def main(args):
-    # --- (File reading and initial parsing are unchanged) ---
     print(f"Parsing position file: {args.aux_file}")
     print(f"Parsing dimension file: {args.zones_file}")
 
     try:
-        with open(args.aux_file, 'r') as f: aux_content = f.read()
-        with open(args.zones_file, 'r') as f: zones_content = f.read()
+        with open(args.aux_file, 'r') as f:
+            aux_content = f.read()
+        with open(args.zones_file, 'r') as f:
+            zones_content = f.read()
     except FileNotFoundError as e:
         print(f"Error: File not found - {e.filename}", file=sys.stderr)
         sys.exit(1)
@@ -53,8 +145,10 @@ def main(args):
         ensure_label(label)
         x_match = pos_x_regex_inner.search(content)
         y_match = pos_y_regex_inner.search(content)
-        if x_match: positions_sp[label]['x'] = int(x_match.group(1))
-        if y_match: positions_sp[label]['y'] = int(y_match.group(1))
+        if x_match:
+            positions_sp[label]['x'] = int(x_match.group(1))
+        if y_match:
+            positions_sp[label]['y'] = int(y_match.group(1))
 
     # Extract width, height dimensions from .zones file
     for match in prop_regex_dim.finditer(zones_content):
@@ -67,25 +161,10 @@ def main(args):
         label, value = match.groups()
         properties[label] = int(float(value))
 
-    # --- PAGE HEIGHT DETECTION LOGIC (with fallback) ---
-    page_height_sp = positions_sp.get('page-1.height', {}).get('y')
+    page_height_sp = find_page_height_sp(args.aux_file, positions_sp)
 
     if not page_height_sp:
-        print("Warning: 'page-1.height' not found in .aux file. Attempting to get height from .log file...")
-        log_file_path = os.path.splitext(args.aux_file)[0] + '.log'
-        try:
-            with open(log_file_path, 'r', errors='ignore') as f:
-                log_content = f.read()
-            match = re.search(r"\\paperheight=([\d.]+)pt", log_content)
-            if match:
-                paper_height_pt = float(match.group(1))
-                page_height_sp = paper_height_pt * 65536
-                print(f"  -> Found page height in .log: {paper_height_pt}pt")
-        except FileNotFoundError:
-            print(f"  -> Warning: .log file not found at '{log_file_path}'.")
-
-    if not page_height_sp:
-        print("\nCRITICAL ERROR: Could not determine page height from .aux or .log files.", file=sys.stderr)
+        print("\nCRITICAL ERROR: Could not determine page height from .aux, .log, or generated PDF files.", file=sys.stderr)
         sys.exit(1)
 
     page_height_px = sp_to_pixels(page_height_sp)
@@ -94,18 +173,27 @@ def main(args):
     positions_px = {}
     for label, props in positions_sp.items():
         px_props = {}
-        if 'x' in props: px_props['x'] = sp_to_pixels(props['x'])
-        if 'y' in props: px_props['y'] = sp_to_pixels(props['y'], page_height_px)
-        # --- THIS IS THE CORRECTED BLOCK ---
-        if 'width' in props: px_props['w'] = sp_to_pixels(props['width'])
-        if 'height' in props: px_props['h'] = sp_to_pixels(props['height'])
-        # --- END OF CORRECTION ---
-        if px_props: positions_px[label] = px_props
+        if 'x' in props:
+            px_props['x'] = sp_to_pixels(props['x'])
+        if 'y' in props:
+            px_props['y'] = sp_to_pixels(props['y'], page_height_px)
+        if 'width' in props:
+            px_props['w'] = sp_to_pixels(props['width'])
+        if 'height' in props:
+            px_props['h'] = sp_to_pixels(props['height'])
+        if px_props:
+            positions_px[label] = px_props
 
     # --- VERIFY THAT ESSENTIAL LABELS AND PROPERTIES WERE FOUND ---
-    required_labels = ['student_id', 'student_name', 'exam_type', 'q1A', 'q1B', 'q2A']
+    registration_digits = properties.get('registration_digits', 0)
+    has_registration_bubbles = registration_digits > 0
+
+    required_labels = ['exam_type', 'q1A', 'q1B', 'q2A']
+    if not has_registration_bubbles:
+        required_labels.extend(['student_id', 'student_name'])
+
     required_props = ['total_questions', 'max_questions_per_column']
-    
+
     total_q = properties.get('total_questions', 0)
     max_per_col = properties.get('max_questions_per_column', 0)
 
@@ -120,8 +208,10 @@ def main(args):
 
     if missing_labels or missing_props:
         print("\nERROR: Could not find the following essential items:", file=sys.stderr)
-        for label in missing_labels: print(f"  - Label '{label}' missing from .aux/.zones files.", file=sys.stderr)
-        for prop in missing_props: print(f"  - Property '{prop}' missing from .zones file.", file=sys.stderr)
+        for label in missing_labels:
+            print(f"  - Label '{label}' missing from .aux/.zones files.", file=sys.stderr)
+        for prop in missing_props:
+            print(f"  - Property '{prop}' missing from .zones file.", file=sys.stderr)
         print("\nPlease check your .tex and .sty files.", file=sys.stderr)
         sys.exit(1)
 
@@ -133,13 +223,12 @@ def main(args):
         questions_per_column.append(q_in_this_col)
         remaining_q -= q_in_this_col
 
-    student_id, student_name, exam_type = positions_px['student_id'], positions_px['student_name'], positions_px['exam_type']
     q1_A, q1_B, q2_A = positions_px['q1A'], positions_px['q1B'], positions_px['q2A']
 
     bubble_spacing_x = q1_B['x'] - q1_A['x']
     bubble_spacing_y = q2_A['y'] - q1_A['y']
     bubble_w, bubble_h = q1_A['w'], q1_A['h']
-    
+
     col_start_x = q1_A['x']
     col_spacing_x = 0
     if len(questions_per_column) > 1:
@@ -147,9 +236,7 @@ def main(args):
         col_spacing_x = q_col2_A['x'] - q1_A['x']
 
     zones_map = {
-        'student_id': [math.ceil(v) for v in (student_id['x'], student_id['y'] - student_id['h'], student_id['w'], student_id['h'])],
-        'student_name': [math.ceil(v) for v in (student_name['x'], student_name['y'] - student_name['h'], student_name['w'], student_name['h'])],
-        'exam_type': [math.ceil(v) for v in (exam_type['x'], exam_type['y'] - exam_type['h'], exam_type['w'], exam_type['h'])],
+        'exam_type': rect_from_position(positions_px['exam_type']),
         'col_start_x': math.ceil(col_start_x),
         'col_spacing_x': round(col_spacing_x, 2),
         'question_y_start': math.ceil(q1_A['y'] - bubble_h),
@@ -160,6 +247,20 @@ def main(args):
         'bubble_spacing_x': round(bubble_spacing_x, 2),
     }
 
+    # Keep legacy text zones when available. New bubble-registration forms may
+    # still emit these zones invisibly, but process_sheets.py will prefer the
+    # bubble grid whenever it is present.
+    if 'student_id' in positions_px:
+        zones_map['student_id'] = rect_from_position(positions_px['student_id'])
+    if 'student_name' in positions_px:
+        zones_map['student_name'] = rect_from_position(positions_px['student_name'])
+
+    registration_bubbles = build_registration_bubbles(registration_digits, positions_px)
+    if registration_bubbles:
+        zones_map['registration_digits'] = registration_digits
+        zones_map['registration_options'] = [str(digit) for digit in range(10)]
+        zones_map['registration_bubbles'] = registration_bubbles
+
     if args.output_file:
         print(f"Saving zones map to: {args.output_file}")
         with open(args.output_file, 'w') as f:
@@ -168,6 +269,7 @@ def main(args):
     else:
         print("\n--- Automatically Generated ZONES_MAP ---\n")
         print(json.dumps(zones_map, indent=4))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generates a JSON zones map from LaTeX auxiliary files.")
