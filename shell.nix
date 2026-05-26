@@ -23,6 +23,8 @@ pkgs.mkShell {
     pkgs.poppler-utils  # For pdftoppm
     pkgs.qpdf           # For PDF manipulation (extracting pages)
     pkgs.gtk3           # GUI library dependency for OpenCV
+    #pkgs.texlive.combined.scheme-full # LaTeX toolchain, including latexmk/lualatex/minted deps
+
 
     # The Python interpreter
     pkgs.python3
@@ -32,6 +34,7 @@ pkgs.mkShell {
     pkgs.python3Packages.pytesseract
     pkgs.python3Packages.numpy
     pkgs.python3Packages.pillow
+    #pkgs.python3Packages.pygments # Provides pygmentize for minted
     
     # Our custom OpenCV package with GTK support
     opencvWithGtk

@@ -211,12 +211,13 @@ __marimo__/
 # =======================================================
 
 # Ignore all generated output files by default
-# We use 'sample_data/' as the example, but this will also cover
+# We use 'sample-data/' as the example, but this will also cover
 # other directories if you change the Makefile.
 /exams/_build/
 /exams/image-cache/
-/sample_data/exams/_build/
-/sample_data/image-cache/
+/sample-data/exams/_build/
+/sample-data/exams/image-cache/*
+!/sample-data/exams/image-cache/.gitkeep
 *.graded-results.csv
 *.results.csv
 *.template-sheet.pdf

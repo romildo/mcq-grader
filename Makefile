@@ -9,11 +9,11 @@
 SCRIPTS_DIR     := scripts
 
 # Base directory and prefix for the exam files
-EXAMS_DIR       := sample_data/exams
-EXAM_PREFIX     := $(EXAMS_DIR)/exam-b
+EXAMS_DIR       := sample-data/exams
+EXAM_PREFIX     := $(EXAMS_DIR)/EE1
 
 # LaTeX source files for the answer sheet template
-LATEX_SRC       := Exam-B-01.tex
+LATEX_SRC       := EE1-01.tex
 STYLE_FILE      := $(EXAMS_DIR)/provastyle.sty
 LATEX_BASE      := $(basename $(LATEX_SRC))
 
@@ -26,6 +26,12 @@ CACHE_DIR       := $(EXAMS_DIR)/image-cache
 PADDING         ?= 10
 THRESHOLD       ?= 1000
 CONF_RATIO      ?= 0.7
+
+# Additional latexmk flags. The bundled ExamForge sample uses minted.
+LATEXMK_FLAGS   ?= -shell-escape
+
+# Let LaTeX find style files stored beside the exam sources.
+LATEX_INPUTS    ?= $(EXAMS_DIR)//:
 
 # --- Key Source Files (Inputs) ---
 ZONES_JSON      := $(EXAM_PREFIX).zones.json
@@ -121,7 +127,8 @@ $(ZONES_JSON): $(BUILD_DIR)/$(LATEX_BASE).aux $(BUILD_DIR)/$(LATEX_BASE).zonas $
 $(MAIN_PDF): $(EXAMS_DIR)/$(LATEX_SRC) $(STYLE_FILE)
 	@echo "--> Compiling main LaTeX document..."
 	@mkdir -p $(BUILD_DIR)
-	latexmk -pdf -pdflatex=lualatex \
+	TEXINPUTS="$(LATEX_INPUTS)" TEXMF_OUTPUT_DIRECTORY="$(BUILD_DIR)" \
+	    latexmk -pdf $(LATEXMK_FLAGS) -lualatex \
 		-output-directory=$(BUILD_DIR) \
 		$(EXAMS_DIR)/$(LATEX_SRC)
 
