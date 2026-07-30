@@ -183,7 +183,7 @@ def main(args):
         ZONES_MAP = json.load(f)
 
     print("Managing image cache...")
-    template_image_path = omr_utils.manage_image_cache(args.template_pdf, args.images_dir, "template", is_template=True)[0]
+    template_image_path = omr_utils.manage_image_cache(args.template_pdf, args.images_dir, is_template=True)[0]
     student_image_paths = omr_utils.manage_image_cache(args.student_sheets_pdf, args.images_dir, args.images_prefix)
 
     template = cv2.imread(template_image_path)

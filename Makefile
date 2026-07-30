@@ -2,83 +2,122 @@
 # Makefile for the MCQ Grader Suite
 # ==============================================================================
 
-# --- Project Configuration ---
-# Adjust these variables for a new exam.
+# Locate project scripts relative to this Makefile, not to the current directory.
+MCQ_GRADER_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+SCRIPTS_DIR     ?= $(MCQ_GRADER_DIR)/scripts
 
-# Directory where the Python scripts are located
-SCRIPTS_DIR     := scripts
+# ==============================================================================
+# Exam Configuration
+# ==============================================================================
 
-# Base directory and prefix for the exam files
-EXAMS_DIR       := sample-data/exams
-EXAM_PREFIX     := $(EXAMS_DIR)/E1
+# Canonical exam prefix. For example:
+#   make EXAM_PREFIX=bcc222.2026-1/exams/exams/EE2 verify
+#
+# Conventional input and output names are derived from this path. Individual
+# variables remain overridable for exams that do not follow the convention.
+EXAM_PREFIX ?= sample-data/exams/E1
+EXAM_DIR    := $(patsubst %/,%,$(dir $(EXAM_PREFIX)))
+EXAM_NAME   := $(notdir $(EXAM_PREFIX))
 
-# LaTeX source files for the answer sheet template
-LATEX_SRC       := E1-01.tex
-STYLE_FILE      := $(EXAMS_DIR)/provastyle.sty
-LATEX_BASE      := $(basename $(LATEX_SRC))
+# LaTeX inputs
+LATEX_SRC     ?= $(EXAM_PREFIX)-01.tex
+STYLE_FILE    ?= $(EXAM_DIR)/provastyle.sty
+LATEX_BASE    := $(basename $(notdir $(LATEX_SRC)))
+LATEXMK_FLAGS ?= -shell-escape
+LATEX_INPUTS  ?= $(EXAM_DIR)//:
 
-# Additional latexmk flags. The bundled ExamForge sample uses minted.
-LATEXMK_FLAGS   ?= -shell-escape
+# Shared output/cache directories. Files inside them are namespaced by the exam.
+BUILD_DIR ?= $(EXAM_DIR)/_build
+CACHE_DIR ?= $(EXAM_DIR)/image-cache
 
-# Let LaTeX find style files stored beside the exam sources.
-LATEX_INPUTS    ?= $(EXAMS_DIR)//:
+# Exam inputs
+ANSWER_SHEETS_PDF ?= $(EXAM_PREFIX).student-sheets.pdf
+ANSWER_KEYS_CSV   ?= $(EXAM_PREFIX).keys.csv
 
-# Output and cache directories
-BUILD_DIR       := $(EXAMS_DIR)/_build
-CACHE_DIR       := $(EXAMS_DIR)/image-cache
+# Generated files
+MAIN_PDF         ?= $(BUILD_DIR)/$(LATEX_BASE).pdf
+ZONES_JSON       ?= $(EXAM_PREFIX).zones.json
+TEMPLATE_PDF     ?= $(EXAM_PREFIX).template-sheet.pdf
+RESULTS_CSV      ?= $(EXAM_PREFIX).results.csv
+GRADED_CSV       ?= $(EXAM_PREFIX).graded-results.csv
+VERIFICATION_PDF ?= $(EXAM_PREFIX).verification.pdf
+
+# Cache filename stems produced by pdftoppm.
+TEMPLATE_CACHE_NAME := $(basename $(notdir $(TEMPLATE_PDF)))
+STUDENT_CACHE_NAME  := $(basename $(notdir $(ANSWER_SHEETS_PDF)))
 
 # --- Fine-tuning Parameters ---
-# These can be overridden from the command line, e.g., `make PADDING=5 THRESHOLD=1500`
-PADDING         ?= 10
-THRESHOLD       ?= 1000
-CONF_RATIO      ?= 0.7
-REG_CONF_RATIO  ?= 0.8
-
-# --- Key Source Files (Inputs) ---
-ZONES_JSON      := $(EXAM_PREFIX).zones.json
-ANSWER_SHEETS_PDF := $(EXAM_PREFIX).student-sheets.pdf
-ANSWER_KEYS_CSV   := $(EXAM_PREFIX).keys.csv
-
-# --- Generated Files (Outputs) ---
-MAIN_PDF        := $(BUILD_DIR)/$(LATEX_BASE).pdf
-TEMPLATE_PDF    := $(EXAM_PREFIX).template-sheet.pdf
-RESULTS_CSV     := $(EXAM_PREFIX).results.csv
-GRADED_CSV      := $(EXAM_PREFIX).graded-results.csv
-VERIFICATION_PDF:= $(EXAM_PREFIX).verification.pdf
+# Override from the command line, e.g.:
+#   make EXAM_PREFIX=path/to/EE2 PADDING=5 THRESHOLD=1500
+PADDING        ?= 10
+THRESHOLD      ?= 1000
+CONF_RATIO     ?= 0.7
+REG_CONF_RATIO ?= 0.8
 
 # Python interpreter command
-PYTHON          := python
+PYTHON ?= python
 
 # ==============================================================================
 # Main Targets
 # ==============================================================================
 
-.PHONY: all grade verify clean clean-all map-manual
+.PHONY: all grade verify clean clean-all map-manual show-config
 
-# Default target: Run the full grading process.
+# Default target: run the full grading process.
 all: grade
 
-# 'grade' is a more explicit name for the default target.
 grade: $(GRADED_CSV)
 
-# Generates the visual verification PDF.
 verify: $(VERIFICATION_PDF)
 
-# Cleans up generated results and LaTeX build files, but preserves the zones.json and image cache.
-clean:
-	@echo "Cleaning up result files and LaTeX build directory..."
-	@rm -f $(RESULTS_CSV) $(GRADED_CSV) $(VERIFICATION_PDF) $(TEMPLATE_PDF)
-	@rm -rf $(BUILD_DIR)
+# Display all paths derived from EXAM_PREFIX.
+show-config:
+	@printf '%-20s %s\n' \
+		'MCQ_GRADER_DIR' '$(MCQ_GRADER_DIR)' \
+		'SCRIPTS_DIR' '$(SCRIPTS_DIR)' \
+		'EXAM_PREFIX' '$(EXAM_PREFIX)' \
+		'EXAM_DIR' '$(EXAM_DIR)' \
+		'EXAM_NAME' '$(EXAM_NAME)' \
+		'LATEX_SRC' '$(LATEX_SRC)' \
+		'STYLE_FILE' '$(STYLE_FILE)' \
+		'BUILD_DIR' '$(BUILD_DIR)' \
+		'CACHE_DIR' '$(CACHE_DIR)' \
+		'ANSWER_SHEETS_PDF' '$(ANSWER_SHEETS_PDF)' \
+		'ANSWER_KEYS_CSV' '$(ANSWER_KEYS_CSV)' \
+		'ZONES_JSON' '$(ZONES_JSON)' \
+		'TEMPLATE_PDF' '$(TEMPLATE_PDF)' \
+		'RESULTS_CSV' '$(RESULTS_CSV)' \
+		'GRADED_CSV' '$(GRADED_CSV)' \
+		'VERIFICATION_PDF' '$(VERIFICATION_PDF)'
 
-# A full clean, including the image cache.
+# Remove generated results and LaTeX artifacts for this exam only. Preserve the
+# zones JSON and cached images.
+clean:
+	@echo "Cleaning generated files for $(EXAM_NAME)..."
+	@rm -f \
+		"$(RESULTS_CSV)" \
+		"$(GRADED_CSV)" \
+		"$(VERIFICATION_PDF)" \
+		"$(TEMPLATE_PDF)"
+	@rm -f "$(BUILD_DIR)/$(LATEX_BASE)".*
+	@rm -rf "$(BUILD_DIR)/_minted-$(LATEX_BASE)"
+	@rmdir "$(BUILD_DIR)" 2>/dev/null || true
+
+# Also remove cached images for this exam, without affecting other exams that
+# share the same image-cache directory.
 clean-all: clean
-	@echo "Cleaning image cache..."
-	@rm -rf $(CACHE_DIR)
+	@echo "Cleaning image cache for $(EXAM_NAME)..."
+	@rm -f \
+		"$(CACHE_DIR)/$(TEMPLATE_CACHE_NAME)"-*.png \
+		"$(CACHE_DIR)/$(STUDENT_CACHE_NAME)"-*.png
+	@rmdir "$(CACHE_DIR)" 2>/dev/null || true
 
 # Helper target for manual zone mapping if needed.
 map-manual: $(TEMPLATE_PDF)
 	@echo "Running manual zone mapper on the generated template..."
-	$(PYTHON) $(SCRIPTS_DIR)/map_zones_manually.py --images-dir $(CACHE_DIR) --template-pdf $(TEMPLATE_PDF)
+	$(PYTHON) $(SCRIPTS_DIR)/map_zones_manually.py \
+		--images-dir $(CACHE_DIR) \
+		--template-pdf $(TEMPLATE_PDF)
 
 # ==============================================================================
 # Build Rules
@@ -126,20 +165,20 @@ $(ZONES_JSON): $(BUILD_DIR)/$(LATEX_BASE).aux $(BUILD_DIR)/$(LATEX_BASE).zonas $
 		$(BUILD_DIR)/$(LATEX_BASE).zonas
 
 # 5. Compile the main LaTeX document
-$(MAIN_PDF): $(EXAMS_DIR)/$(LATEX_SRC) $(STYLE_FILE)
+$(MAIN_PDF): $(LATEX_SRC) $(STYLE_FILE)
 	@echo "--> Compiling main LaTeX document..."
 	@mkdir -p $(BUILD_DIR)
 	TEXINPUTS="$(LATEX_INPUTS)" TEXMF_OUTPUT_DIRECTORY="$(BUILD_DIR)" \
-	    latexmk -lualatex $(LATEXMK_FLAGS) \
+		latexmk -pdf -pdflatex="lualatex $(LATEXMK_FLAGS) %O %S" \
 		-output-directory=$(BUILD_DIR) \
-		$(EXAMS_DIR)/$(LATEX_SRC)
+		$(LATEX_SRC)
 
-# 6. Extract the blank answer sheet from the main PDF
-# 'r2' syntax means "the second page from the end".
+# 6. Extract the blank answer sheet from the main PDF.
+# qpdf's r2 syntax means "the second page from the end".
 $(TEMPLATE_PDF): $(MAIN_PDF)
 	@echo "--> Extracting blank answer sheet (penultimate page) from main PDF..."
 	qpdf $< --pages . r2 -- $@
 
-# Implicit dependency for LaTeX auxiliary files
+# Implicit dependencies for LaTeX auxiliary files.
 $(BUILD_DIR)/$(LATEX_BASE).aux: $(MAIN_PDF)
 $(BUILD_DIR)/$(LATEX_BASE).zonas: $(MAIN_PDF)

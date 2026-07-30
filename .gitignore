@@ -210,14 +210,11 @@ __marimo__/
 # Rules for the MCQ Grader Project (mcq-grader)
 # =======================================================
 
-# Ignore all generated output files by default
-# We use 'sample-data/' as the example, but this will also cover
-# other directories if you change the Makefile.
-/exams/_build/
-/exams/image-cache/
-/sample-data/exams/_build/
-/sample-data/exams/image-cache/*
-!/sample-data/exams/image-cache/.gitkeep
+# Ignore shared build directories and cached images wherever an exam prefix
+# is located. Keep cache directory placeholders when present.
+**/_build/
+**/image-cache/*
+!**/image-cache/.gitkeep
 *.graded-results.csv
 *.results.csv
 *.template-sheet.pdf
