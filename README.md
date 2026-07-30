@@ -33,8 +33,9 @@ variants, an answer-key CSV, and anonymized scanned answer sheets.
   and inclusive OR answer-key semantics.
 - **Makefile workflow:** rebuilds only targets whose file dependencies are
   newer.
-- **Optional Nix environment:** `shell.nix` provides the development and
-  runtime dependencies without making Nix mandatory.
+- **Optional Nix integration:** `shell.nix` provides a development shell,
+  while `package.nix` builds an installable command suite with wrapped runtime
+  dependencies. Nix is not required for non-Nix installations.
 
 ## Project Structure
 
@@ -44,7 +45,8 @@ mcq-grader/
 ├── LICENSE
 ├── Makefile
 ├── README.md
-├── shell.nix
+├── package.nix             # Installable Nix package expression
+├── shell.nix               # Optional Nix development shell
 ├── scripts/
 │   ├── generate_zones.py
 │   ├── grade_exams.py
@@ -119,14 +121,139 @@ The bundled ExamForge example uses `minted`, so its LaTeX build requires shell
 escape and the `pygmentize`/`latexminted` tooling provided by a suitable TeX and
 Pygments installation.
 
-Nix is optional. With Nix installed, enter the provided environment with:
+Nix is optional. `shell.nix` provides a development environment, while
+`package.nix` builds an installable set of wrapped commands. Otherwise, use an
+existing Python/LaTeX environment containing the dependencies above.
+
+## Nix Usage
+
+The repository provides two Nix entry points:
+
+- `shell.nix` is intended for development from a source checkout;
+- `package.nix` installs MCQ Grader's scripts, Makefile workflow, runtime
+  dependencies, and bundled example.
+
+### Development shell
+
+Enter the development environment with:
 
 ```bash
 nix-shell
 ```
 
-Otherwise, use an existing Python/LaTeX environment containing the
-dependencies above.
+The development shell includes LaTeX and GTK support so the complete workflow
+and the manual OpenCV mapper are available.
+
+### Build the package
+
+Build the default package from the repository root:
+
+```bash
+nix-build -E 'with import <nixpkgs> {}; callPackage ./package.nix {}'
+```
+
+The default package includes the Python environment, OpenCV, Tesseract,
+Poppler, qpdf, GNU Make, and the other non-LaTeX runtime tools. To avoid a large
+closure, TeX Live and GTK support are optional.
+
+Build a self-contained package for the full LaTeX-to-grading workflow:
+
+```bash
+nix-build -E '
+  with import <nixpkgs> {};
+  callPackage ./package.nix {
+    withTex = true;
+  }
+'
+```
+
+Enable GTK as well when `map-manual` or `mcq-map-zones-manually` is needed:
+
+```bash
+nix-build -E '
+  with import <nixpkgs> {};
+  callPackage ./package.nix {
+    withTex = true;
+    withGtk = true;
+  }
+'
+```
+
+`withTex = false` and `withGtk = false` are the defaults. A default build can
+still use LaTeX or GTK tools already available in the caller's environment,
+but enabling the options makes those dependencies part of the package closure.
+
+### Installed commands
+
+The package provides:
+
+| Command | Purpose |
+|---|---|
+| `mcq-grader-make` | Run the installed Makefile workflow from a writable exam directory |
+| `mcq-generate-zones` | Run `generate_zones.py` directly |
+| `mcq-process-sheets` | Run `process_sheets.py` directly |
+| `mcq-verify-zones` | Run `verify_zones.py` directly |
+| `mcq-grade-exams` | Run `grade_exams.py` directly |
+| `mcq-map-zones-manually` | Run the GUI mapper; requires `withGtk = true` |
+| `mcq-grader-copy-example` | Copy the bundled example to a writable directory |
+
+For example:
+
+```bash
+result_path="$(nix-build -E '
+  with import <nixpkgs> {};
+  callPackage ./package.nix {
+    withTex = true;
+  }
+')"
+
+"$result_path/bin/mcq-grader-make" \
+  EXAM_PREFIX="$PWD/bcc222.2026-1/exams/exams/EE2" \
+  show-config
+```
+
+The Makefile and scripts are read from the immutable Nix store, while exam
+inputs, caches, and generated outputs remain under the writable
+`EXAM_PREFIX` directory.
+
+### Copy the bundled example
+
+Create a writable example project:
+
+```bash
+result_path="$(nix-build -E '
+  with import <nixpkgs> {};
+  callPackage ./package.nix {
+    withTex = true;
+  }
+')"
+
+"$result_path/bin/mcq-grader-copy-example" /tmp/mcq-grader-example
+cd /tmp/mcq-grader-example
+"$result_path/bin/mcq-grader-make" show-config
+"$result_path/bin/mcq-grader-make" verify
+"$result_path/bin/mcq-grader-make" grade
+```
+
+The copy helper writes a small forwarding `Makefile`. It uses the installed
+scripts and runtime dependencies but keeps the copied `sample-data/` and all
+generated files outside the Nix store.
+
+### Install in a NixOS configuration
+
+A local checkout can be added to `environment.systemPackages`:
+
+```nix
+environment.systemPackages = [
+  (pkgs.callPackage /path/to/mcq-grader/package.nix {
+    withTex = true;
+    withGtk = true;
+  })
+];
+```
+
+After rebuilding NixOS, run `mcq-grader-make` from an exam project directory
+and supply `EXAM_PREFIX` when the exam does not use the bundled default path.
 
 ## Quick Start
 
