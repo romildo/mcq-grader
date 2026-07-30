@@ -47,13 +47,11 @@ def main(args):
     # Use the utility function to get the path to the template image
     # Note: We can also point it to the student sheets PDF to map on a real example
     pdf_to_map = args.student_sheets_pdf if args.student_sheets_pdf else args.template_pdf
-    prefix = "student_sheet_example" if args.student_sheets_pdf else "template"
-    
     if not pdf_to_map:
         print("Error: You must provide either --template-pdf or --student-sheets-pdf.", file=sys.stderr)
         sys.exit(1)
 
-    image_path = omr_utils.manage_image_cache(pdf_to_map, args.images_dir, prefix, is_template=True)[0]
+    image_path = omr_utils.manage_image_cache(pdf_to_map, args.images_dir, is_template=True)[0]
     
     print(f"Loading image for mapping: {image_path}")
     image = cv2.imread(image_path)

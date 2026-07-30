@@ -1,47 +1,58 @@
 # MCQ Grader Suite
 
-An automated suite of tools for grading multiple-choice question (MCQ) answer sheets, covering the entire workflow from LaTeX source to the final graded results.
+MCQ Grader automates the grading of multiple-choice answer sheets, from a
+LaTeX exam source to a final CSV with per-question results and scores.
 
-## Overview
+The workflow combines LaTeX-derived zone metadata, PDF rendering, OpenCV
+alignment, Optical Mark Recognition (OMR), limited OCR for header fields, and
+CSV-based grading. A `Makefile` orchestrates the complete pipeline.
 
-This project leverages a combination of LaTeX processing, computer vision with OpenCV, and Python scripts to achieve a high degree of automation and accuracy in grading exams. It combines LaTeX-generated zone metadata, OpenCV-based sheet alignment, Optical Mark Recognition (OMR), OCR for header fields, CSV processing.
+The bundled example under `sample-data/exams/` was generated with
+[ExamForge](https://github.com/romildo/ExamForge). It contains ten exam
+variants, an answer-key CSV, and anonymized scanned answer sheets.
 
-The entire workflow is orchestrated by a `Makefile` and can run in a reproducible Nix environment, ensuring consistency and ease of use.
+## Features
 
-The bundled example under `sample-data/exams/` was generated with [ExamForge](https://github.com/romildo/ExamForge). It contains 10 exam variants, one answer key CSV with one row per variant, and an anonymized scanned answer-sheet PDF.
-
-## Key Features
-
-  * **Automated zoning via LaTeX**: zone coordinates for answer bubbles, header fields, and bubble-encoded registration numbers are extracted directly from LaTeX compilation (`.aux` and `.zonas`) files, eliminating the need for manual mapping.
-  * **High-precision alignment**: detects the printed top-left, top-right, and bottom-left fiducial markers directly from the template and scanned sheets, then computes a full affine transform to correct rotation, shear, and independent horizontal/vertical scale distortions.
-  * **Robust fallback alignment**: for older answer sheets without markers, the system automatically falls back to a robust affine alignment method based on image features.
-  * **Image caching**: the conversion of PDFs to images (the slowest step) is performed only once. Images are saved to a cache directory for instant reuse in subsequent runs.
-  * **Bubble-encoded registration numbers**: newer ExamForge answer sheets can encode the student registration number as digit bubbles (`id_1_0` through `id_N_9`), avoiding fragile OCR for student identifiers.
-  * **Exam type normalization**: OCR/CSV exam variant values such as `01`, `o1`, and `O1` are normalized before grading, avoiding false missing-key errors.
-  * **Complex grading logic**: supports questions with multiple correct answers using distinct modes:
-      * **Inclusive OR** (e.g., `A+B`): the student is correct if they mark any non-empty subset of the correct answers, without marking any incorrect ones.
-      * **Exclusive AND** (e.g., `AB`): the student must mark *exactly* all correct answers and no others.
-      * **Single exact answers** (e.g., `B`).
-  * **Makefile-driven workflow**: the entire process is managed by a `Makefile`, ensuring that only the necessary steps are executed based on file dependencies.
-  * **Optional reproducible environment**: system and package dependencies are defined in `shell.nix` for users who want a Nix-based development shell.
+- **LaTeX-derived zones:** extracts answer, header, and registration-grid
+  geometry from `.aux` and `.zonas` files.
+- **Three-marker alignment:** detects the printed top-left, top-right, and
+  bottom-left fiducial markers and computes a full affine transform. This
+  corrects translation, rotation, shear, and independent horizontal and
+  vertical scaling.
+- **Feature-based fallback:** uses ORB feature matching when direct fiducial
+  detection is unavailable.
+- **Bubble registration numbers:** reads student registration numbers from
+  digit grids such as `id_1_0` through `id_N_9`.
+- **Legacy header OCR:** keeps text-based student ID and name extraction as a
+  fallback for older answer sheets.
+- **Exam-type normalization:** normalizes OCR/CSV values such as `01`, `o1`,
+  and `O1` before answer-key lookup.
+- **PDF image caching:** renders template and student PDFs at 300 DPI and reuses
+  namespaced PNG files on later runs.
+- **Multiple-answer grading:** supports exact single answers, exclusive AND,
+  and inclusive OR answer-key semantics.
+- **Makefile workflow:** rebuilds only targets whose file dependencies are
+  newer.
+- **Optional Nix environment:** `shell.nix` provides the development and
+  runtime dependencies without making Nix mandatory.
 
 ## Project Structure
 
 ```text
 mcq-grader/
-|-- .gitignore
-|-- LICENSE
-├── Makefile                # Main workflow orchestrator
-├── README.md               # This documentation
-├── shell.nix               # Optional Nix development environment
-├── scripts/                # Python source code
+├── .gitignore
+├── LICENSE
+├── Makefile
+├── README.md
+├── shell.nix
+├── scripts/
 │   ├── generate_zones.py
 │   ├── grade_exams.py
 │   ├── map_zones_manually.py
 │   ├── omr_utils.py
 │   ├── process_sheets.py
 │   └── verify_zones.py
-└── sample-data/            # Example files to demonstrate the tool
+└── sample-data/
     └── exams/
         ├── E1-01.tex
         ├── E1-02.tex
@@ -54,28 +65,40 @@ mcq-grader/
             └── .gitkeep
 ```
 
-## How It Works
+Generated files such as `_build/`, cached PNG files, zone maps, template PDFs,
+verification PDFs, extracted results, and graded results are not intended to be
+committed.
 
-The system follows a clear data processing pipeline:
+## Processing Pipeline
 
-1.  **LaTeX compilation:** the `.tex` source file is compiled, generating a main PDF and auxiliary files (`.aux`, `.zonas`) containing precise coordinate data for all defined zones.
-2.  **Zone generation:** `generate_zones.py` parses the auxiliary files and creates an image-coordinate `zones.json` map from the LaTeX metadata. If the LaTeX metadata contains `registration_digits` and `id_<position>_<digit>` zones, the generated map includes a registration bubble grid.
-3.  **Answer extraction:** `process_sheets.py` reads the scanned student sheets, aligns each page to the template using the three printed fiducial markers when available, uses the `zones.json` map to locate the answers, performs Optical Mark Recognition (OMR), decodes bubble registration numbers when present, and saves the results to a CSV file.
-4.  **Grading:** `grade_exams.py` normalizes the extracted exam type, compares the extracted answers with the answer key, applies the grading logic, and produces the final CSV with scores.
+1. **Compile LaTeX.** `latexmk` runs LuaLaTeX and produces the exam PDF plus
+   `.aux`, `.zonas`, and `.log` metadata.
+2. **Generate zones.** `generate_zones.py` converts TeX coordinates to 300-DPI
+   image coordinates and writes `*.zones.json`.
+3. **Extract the template.** `qpdf` copies the penultimate page of the generated
+   exam PDF to `*.template-sheet.pdf`.
+4. **Render PDFs.** `pdftoppm` converts the template and scanned student PDF to
+   cached PNG images.
+5. **Align sheets.** MCQ Grader detects the three printed fiducials and warps
+   each student sheet into template coordinates. Feature matching is used as a
+   fallback.
+6. **Read headers and bubbles.** The scripts decode registration bubbles,
+   normalize the exam type, and classify answer bubbles.
+7. **Write extracted results.** `*.results.csv` contains identifiers, exam type,
+   answers, and per-question confidence columns.
+8. **Grade.** `grade_exams.py` compares the extracted answers with
+   `*.keys.csv`, annotates incorrect answers, removes confidence columns, and
+   writes `*.graded-results.csv`.
 
 ## Prerequisites
 
-* Python with OpenCV, pandas, Pillow, pytesseract, NumPy, Poppler tools, qpdf, and Tesseract available.
-* LaTeX tooling is required when generating zones from `.tex` sources. The bundled ExamForge sample uses `minted`, so it needs shell escape and Pygments.
-* Optional: use `nix-shell` to enter the reproducible environment declared in `shell.nix`.
-
-
 System tools:
 
-```bash
+```text
 latexmk
 lualatex
 qpdf
+pdfinfo
 pdftoppm
 tesseract
 pygmentize
@@ -83,110 +106,521 @@ pygmentize
 
 Python packages:
 
-```bash
+```text
 opencv-python
 numpy
 pandas
 Pillow
 pytesseract
+Pygments
 ```
 
-With Nix installed, enter the provided environment with:
+The bundled ExamForge example uses `minted`, so its LaTeX build requires shell
+escape and the `pygmentize`/`latexminted` tooling provided by a suitable TeX and
+Pygments installation.
+
+Nix is optional. With Nix installed, enter the provided environment with:
 
 ```bash
 nix-shell
 ```
 
-## Bundled Example
+Otherwise, use an existing Python/LaTeX environment containing the
+dependencies above.
 
-The default `Makefile` configuration runs the bundled ExamForge example:
+## Quick Start
 
-```make
-EXAMS_DIR   := sample-data/exams
-EXAM_PREFIX := $(EXAMS_DIR)/EE1
-LATEX_SRC   := EE1-01.tex
+Run the bundled example from the repository root:
+
+```bash
+make verify
+make grade
 ```
 
-`EE1.keys.csv` contains keys for variants `1` through `10`. The selected LaTeX source is used to generate the blank answer-sheet template. The scanned student-sheet PDF contains anonymized sample sheets from the same exam family.
+`make` and `make all` are aliases for the grading workflow:
 
-Because the example uses `minted`, the Makefile enables shell escape through:
-
-```make
-LATEXMK_FLAGS ?= -shell-escape
+```bash
+make
 ```
 
-## Usage Guide
+Inspect the final files under `sample-data/exams/`:
 
-### 1\. Preparation
+```text
+E1.verification.pdf
+E1.results.csv
+E1.graded-results.csv
+```
 
-* Place the Python scripts in the directory defined by the `SCRIPTS_DIR` variable in the `Makefile` (e.g., `scripts/`).
-* Place your exam source files in the `EXAMS_DIR` (e.g., `sample-data/exams/`). This includes:
-    * The main `.tex` file for your exam.
-    * The `provastyle.sty` file.
-    * The answer key `.csv` file.
-    * The scanned PDF of the filled-out student answer sheets.
-    * For bubble registration, the LaTeX-generated `.zonas` data must include `registration_digits` and zones named `id_1_0` through `id_N_9`.
+Review `E1.verification.pdf` before trusting the grading output. The rectangles
+should remain centered on the printed fields and bubbles from the top to the
+bottom of every page.
 
-### 2\. Configuration
+## Exam Prefix and File Convention
 
-* Open the `Makefile` in a text editor.
-* Adjust the variables in the "Project Configuration" section to match your filenames (e.g., `EXAM_PREFIX`, `LATEX_SRC`).
-* Adjust the "Fine-tuning Parameters" (`PADDING`, `THRESHOLD`, `CONF_RATIO`, `REG_CONF_RATIO`) as needed for your scanning conditions.
+`EXAM_PREFIX` is the canonical location of an exam. It contains both the
+directory and the common filename prefix.
 
-### 3\. Execution
+For example:
 
-* Open your terminal in the project's root directory.
-* If you use Nix, start the development environment:
-  ```bash
-  nix-shell
-  ```
-* To run the entire workflow and generate the final graded spreadsheet:
-  ```bash
-  make grade
-  # or simply:
-  make
-  ```
-* To generate a visual verification PDF before trusting results (highly recommended):
-  ```bash
-  make verify
-  ```
-* To clean generated CSVs, verification PDFs, template PDFs, and LaTeX build output:
-  ```bash
-  make clean
-  ```
-* To clean generated files and the image cache:
-  ```bash
-  make clean-all
-  ```
-* For another exam, override or edit the Makefile variables:
-  ```bash
-  make \
-    EXAMS_DIR=path/to/exams \
-    EXAM_PREFIX=path/to/exams/my-exam \
-    LATEX_SRC=My-Exam-01.tex
-  ```
+```bash
+make EXAM_PREFIX=bcc222.2026-1/exams/exams/EE2 show-config
+```
 
-### Fine-Tuning and Special Cases
+Given the prefix:
 
-* **Tuning parameters:** you can experiment with different `PADDING`, `THRESHOLD`, `CONF_RATIO`, and registration confidence values without editing the `Makefile` by passing them on the command line:
-  ```bash
-  make PADDING=5 THRESHOLD=1500
-  make CONF_RATIO=0.75
-  make REG_CONF_RATIO=0.85
-  ```
-  Registration bubbles automatically cap their effective padding so tightly spaced digit bubbles do not overlap neighboring rows or columns.
-  * **Exam type OCR normalization:** numeric exam variants are normalized before answer-key lookup. For example, OCR outputs such as `o1`, `O1`, and `01` all match answer key variant `1`.
+```text
+bcc222.2026-1/exams/exams/EE2
+```
 
-* **Manual zone adjustment:** if you need to manually fix a zone for sheets without proper LaTeX metadata:
-  1.  Run `make map-manual`.
-  2.  Capture the coordinates for the desired zone.
-  3.  Manually edit the generated `.zones.json` file, replacing the coordinates for the relevant key.
-  4.  Run `make` again. The `Makefile` will not overwrite an edited `.zones.json` unless the source metadata is regenerated (e.g., the LaTeX files are modified).
+the Makefile derives these defaults:
 
-### Answer Key Format for Multiple Answers
+| Purpose | Derived path |
+|---|---|
+| First LaTeX variant | `bcc222.2026-1/exams/exams/EE2-01.tex` |
+| Style file | `bcc222.2026-1/exams/exams/provastyle.sty` |
+| Answer keys | `bcc222.2026-1/exams/exams/EE2.keys.csv` |
+| Scanned sheets | `bcc222.2026-1/exams/exams/EE2.student-sheets.pdf` |
+| Zone map | `bcc222.2026-1/exams/exams/EE2.zones.json` |
+| Blank template | `bcc222.2026-1/exams/exams/EE2.template-sheet.pdf` |
+| Extracted answers | `bcc222.2026-1/exams/exams/EE2.results.csv` |
+| Graded results | `bcc222.2026-1/exams/exams/EE2.graded-results.csv` |
+| Verification PDF | `bcc222.2026-1/exams/exams/EE2.verification.pdf` |
+| LaTeX intermediates | `bcc222.2026-1/exams/exams/_build/` |
+| Rendered images | `bcc222.2026-1/exams/exams/image-cache/` |
 
-The answer key CSV file (`.keys.csv`) supports a special syntax for complex questions:
+Cached files include the exam name, avoiding collisions when multiple exams
+share the same directory:
 
-* **`A+C` (Inclusive OR):** The student is correct if they mark `A`, `C`, or `A,C`, but no other options.
-* **`AC` (Exclusive AND):** The student is correct **only** if they mark both `A` and `C`, and no other options.
-* **`B` (Exact single answer):** The student is correct only if they mark `B`.
+```text
+EE2.template-sheet-1.png
+EE2.student-sheets-1.png
+EE2.student-sheets-2.png
+```
+
+For a conventional exam, only `EXAM_PREFIX` is needed:
+
+```bash
+make EXAM_PREFIX=bcc222.2026-1/exams/exams/EE2 verify
+make EXAM_PREFIX=bcc222.2026-1/exams/exams/EE2 grade
+```
+
+Use `show-config` whenever a path is unexpected:
+
+```bash
+make EXAM_PREFIX=path/to/EE2 show-config
+```
+
+### Nonstandard file locations
+
+Derived paths remain overridable. For example:
+
+```bash
+make \
+  EXAM_PREFIX=bcc222.2026-1/exams/exams/EE2 \
+  STYLE_FILE=bcc222.2026-1/latex/provastyle.sty \
+  ANSWER_KEYS_CSV=bcc222.2026-1/keys/EE2.csv \
+  verify
+```
+
+Common path overrides are:
+
+```text
+LATEX_SRC
+STYLE_FILE
+BUILD_DIR
+CACHE_DIR
+ANSWER_SHEETS_PDF
+ANSWER_KEYS_CSV
+ZONES_JSON
+TEMPLATE_PDF
+RESULTS_CSV
+GRADED_CSV
+VERIFICATION_PDF
+SCRIPTS_DIR
+PYTHON
+```
+
+The scripts are resolved relative to the Makefile rather than the current
+directory. MCQ Grader can therefore be used from another project without
+copying its scripts:
+
+```bash
+make -f /path/to/mcq-grader/Makefile \
+  EXAM_PREFIX="$PWD/exams/EE2" \
+  verify
+```
+
+Use an absolute `EXAM_PREFIX` in that form.
+
+## Make Targets
+
+| Target | Result |
+|---|---|
+| `make`, `make all`, `make grade` | Run the complete pipeline and produce the graded CSV |
+| `make verify` | Produce the visual zone-verification PDF |
+| `make show-config` | Print all paths derived from `EXAM_PREFIX` |
+| `make map-manual` | Open the template in the OpenCV manual zone mapper |
+| `make clean` | Remove generated results, verification/template PDFs, and LaTeX artifacts for the selected exam |
+| `make clean-all` | Run `clean` and also remove cached PNG files for the selected exam |
+
+Cleanup is scoped by `EXAM_PREFIX`; it does not delete another exam's
+namespaced cache files or build artifacts.
+
+## Fine-Tuning and Special Cases
+
+The defaults are defined in the Makefile:
+
+```make
+PADDING        ?= 10
+THRESHOLD      ?= 1000
+CONF_RATIO     ?= 0.7
+REG_CONF_RATIO ?= 0.8
+```
+
+Override them on the command line rather than editing the Makefile:
+
+```bash
+make EXAM_PREFIX=path/to/EE2 PADDING=5 THRESHOLD=1500 grade
+make EXAM_PREFIX=path/to/EE2 CONF_RATIO=0.75 REG_CONF_RATIO=0.85 grade
+```
+
+### `PADDING`
+
+`PADDING` is the number of pixels added around every mapped rectangle before
+OCR or bubble scoring. The same value is also used when drawing the answer and
+header rectangles in the verification PDF.
+
+Default:
+
+```text
+10 pixels
+```
+
+Effects:
+
+- Increasing it tolerates small residual alignment or zone-coordinate errors.
+- Increasing it also includes more printed borders, text, noise, or neighboring
+  bubbles and can create false marks.
+- Decreasing it isolates the intended bubble more tightly.
+- Decreasing it too far can crop part of a filled mark.
+
+Registration bubbles are often closer together than answer bubbles. Their
+effective padding is automatically capped so one registration ROI does not
+overlap adjacent digit rows or columns.
+
+Start with `PADDING=10`. If verification rectangles are centered but bubble
+outlines from adjacent options enter the ROI, try `PADDING=5` or a nearby
+value.
+
+### `THRESHOLD`
+
+`THRESHOLD` is the minimum absolute bubble score needed to consider a question
+or registration position marked.
+
+For each candidate bubble, MCQ Grader:
+
+1. expands the zone by `PADDING`;
+2. converts it to grayscale;
+3. applies inverted Otsu thresholding;
+4. counts the resulting nonzero, dark pixels.
+
+If the highest score in a bubble group is below `THRESHOLD`, the result is
+`BLANK`.
+
+Default:
+
+```text
+1000 dark pixels
+```
+
+Tuning direction:
+
+- Increase `THRESHOLD` when empty printed bubbles, scanner noise, or shadows are
+  being interpreted as marks.
+- Decrease `THRESHOLD` when valid light or incomplete marks are being reported
+  as blank.
+
+The score is an absolute pixel count. It depends on the rendered resolution,
+bubble size, and padding. Zone generation and PDF rendering currently assume
+300 DPI, so changing image resolution requires retuning and may invalidate the
+zone geometry.
+
+### `CONF_RATIO`
+
+`CONF_RATIO` controls which answer options count as marked relative to the
+strongest option for that question.
+
+After the absolute threshold is passed, an option is selected when:
+
+```text
+option_score >= strongest_score * CONF_RATIO
+```
+
+Default:
+
+```text
+0.7
+```
+
+Expected range:
+
+```text
+0.0 to 1.0
+```
+
+Tuning direction:
+
+- Increase it to reject weak secondary marks, erasures, or nearby noise.
+- Decrease it when legitimately selected options in multi-answer questions
+  differ noticeably in fill strength.
+- A value that is too high can hide a lightly filled second answer.
+- A value that is too low can turn noise into an unintended multiple answer.
+
+Example: with `CONF_RATIO=0.7` and a strongest score of `2000`, every option
+scoring at least `1400` is considered marked.
+
+### `REG_CONF_RATIO`
+
+`REG_CONF_RATIO` applies the same relative-score rule to each column of the
+bubble-encoded registration number.
+
+Default:
+
+```text
+0.8
+```
+
+It is intentionally stricter than the answer ratio because exactly one digit
+should be selected per registration position.
+
+- Increase it when neighboring or partially erased registration bubbles create
+  ambiguous digits.
+- Decrease it only when clearly filled registration digits are being lost
+  because mark strength varies substantially.
+
+A blank or ambiguous registration position is written as `?` and reported as
+a warning. Review such rows before using the results.
+
+### Recommended tuning workflow
+
+1. Run `make ... verify` and inspect alignment and zone placement.
+2. Fix geometry/alignment problems before changing OMR thresholds.
+3. Adjust `PADDING` until each rectangle covers the intended mark without
+   including neighboring bubbles.
+4. Adjust `THRESHOLD` to separate blank bubbles from genuinely filled bubbles.
+5. Adjust `CONF_RATIO` only after the absolute threshold behaves correctly.
+6. Tune `REG_CONF_RATIO` separately if registration digits remain ambiguous.
+7. Regenerate `*.results.csv`, then grade again.
+
+Make tracks file timestamps, not command-line variable values. If a result
+already exists, changing only `PADDING`, `THRESHOLD`, `CONF_RATIO`, or
+`REG_CONF_RATIO` may leave the target up to date. Remove the affected outputs
+or clean the selected exam before rerunning. For example:
+
+```bash
+rm -f path/to/EE2.results.csv path/to/EE2.graded-results.csv
+make EXAM_PREFIX=path/to/EE2 PADDING=5 THRESHOLD=1500 grade
+```
+
+For verification-only changes:
+
+```bash
+rm -f path/to/EE2.verification.pdf
+make EXAM_PREFIX=path/to/EE2 PADDING=5 verify
+```
+
+### Fiducial alignment
+
+The preferred alignment path detects three black square markers directly in
+the template and scanned images:
+
+```text
+top-left
+top-right
+bottom-left
+```
+
+Successful runs print messages indicating detected-fiducial alignment. If a
+marker cannot be detected, MCQ Grader tries legacy marker-zone alignment and
+then feature-based affine alignment.
+
+When verification rectangles drift progressively down or across the page,
+check the alignment messages first. A feature-based fallback may be less
+precise for scanner-induced non-uniform scaling than the three-marker full
+affine transform.
+
+Keep the corner markers:
+
+- solid black;
+- approximately square;
+- unobstructed by handwriting, staples, clipping, or scanning;
+- inside the scanned page;
+- in the expected corner regions.
+
+### Bubble-encoded registration numbers
+
+When the LaTeX metadata contains:
+
+```text
+registration_digits
+id_1_0 ... id_1_9
+id_2_0 ... id_2_9
+...
+id_N_0 ... id_N_9
+```
+
+`generate_zones.py` writes a registration grid into the zone map and
+`process_sheets.py` uses it in preference to OCR.
+
+For these sheets:
+
+- `Student_ID` contains the decoded digit string;
+- `Student_Name` is left blank;
+- blank or ambiguous digit positions become `?`.
+
+When the registration grid is absent, legacy `student_id` and `student_name`
+text zones are read with Tesseract OCR.
+
+### Exam-type OCR normalization
+
+The exam variant is still read from the `exam_type` text zone. Common OCR
+confusions are normalized before writing results and again before answer-key
+lookup. Examples include:
+
+```text
+01  -> 1
+o1  -> 1
+O1  -> 1
+1O  -> 10
+```
+
+The answer key must contain one unique `Exam_Type` row after normalization.
+Duplicate normalized variants are rejected.
+
+### Cache invalidation
+
+Cached images are reused whenever matching PNG filenames already exist. The
+current cache check is filename-based; it does not compare PDF modification
+times or content hashes.
+
+After replacing either PDF, remove the selected exam's cached images:
+
+```bash
+make EXAM_PREFIX=path/to/EE2 clean-all
+```
+
+Then rerun `verify` or `grade`.
+
+Do this especially after:
+
+- rescanning student sheets;
+- replacing the template PDF;
+- changing page count or order;
+- changing the exam prefix while reusing manually named cache files.
+
+### Manual zone adjustment
+
+Manual mapping is a fallback for missing or incorrect LaTeX metadata:
+
+```bash
+make EXAM_PREFIX=path/to/EE2 map-manual
+```
+
+In the OpenCV window:
+
+1. drag a rectangle around the desired region;
+2. copy the printed `[x, y, width, height]` coordinates;
+3. edit the relevant entry in `*.zones.json`;
+4. rerun verification before grading.
+
+Press `r` to clear drawn rectangles and `q` to exit.
+
+Manual edits may be overwritten when the `.aux` or `.zonas` dependencies
+become newer and the zone map is regenerated. Prefer fixing the LaTeX zone
+metadata when the problem affects every exam generated from the same style.
+
+## Answer Key Format
+
+The answer-key CSV contains one row per exam variant and columns named
+`Exam_Type`, `Q1`, `Q2`, and so on.
+
+Example:
+
+```csv
+Exam_Type,Q1,Q2,Q3
+1,B,AC,A+C
+2,D,B,C
+```
+
+Answer semantics:
+
+- `B`: exact single answer; only `B` is correct.
+- `AC`: exclusive AND; the student must mark exactly `A` and `C`.
+- `A+C`: inclusive OR; the student may mark `A`, `C`, or both, but no incorrect
+  option.
+
+A blank key cell is not considered correct.
+
+In the graded CSV, an incorrect answer is annotated as:
+
+```text
+student_answer~correct_answer
+```
+
+For example:
+
+```text
+B~C
+BLANK~A
+```
+
+## Troubleshooting
+
+### Verification uses feature-based fallback on every page
+
+Check that all three fiducial markers are visible in both the blank template
+and each scanned sheet. Cropped, gray, distorted, or obstructed markers may
+prevent direct detection.
+
+### Verification rectangles are consistently shifted
+
+Inspect the template and generated `*.zones.json`. A uniform shift usually
+indicates incorrect zone geometry or a template mismatch. Use `map-manual` to
+measure the discrepancy, but fix the LaTeX metadata when possible.
+
+### Verification rectangles drift from top to bottom
+
+Confirm that direct three-marker alignment succeeded. The full affine
+transform corrects independent vertical scaling; the feature-based fallback
+may not correct it as accurately.
+
+### Valid marks are reported as `BLANK`
+
+Lower `THRESHOLD` gradually after confirming that alignment and `PADDING` are
+correct.
+
+### Empty bubbles are reported as selected
+
+Raise `THRESHOLD`, reduce `PADDING`, or both.
+
+### Too many multiple answers are detected
+
+Increase `CONF_RATIO`. If this happens only in the registration grid, increase
+`REG_CONF_RATIO`.
+
+### Registration contains `?`
+
+The corresponding digit position was blank or more than one bubble had a score
+close to the strongest mark. Inspect the verification PDF and the original
+scan, then adjust registration confidence only if the geometry is correct.
+
+### Answer key not found for an exam type
+
+Inspect the extracted `Exam_Type` in `*.results.csv` and the `Exam_Type` column
+in `*.keys.csv`. Values are normalized, but the normalized result must still
+match exactly one answer-key row.
+
+### Updated PDFs are not reflected in the output
+
+The cached PNGs are probably being reused. Run `clean-all` for the selected
+exam and process it again.

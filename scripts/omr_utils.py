@@ -48,11 +48,14 @@ def normalize_exam_type(value):
     return normalized
 
 
-def manage_image_cache(pdf_path, image_dir, image_prefix, is_template=False):
+def manage_image_cache(pdf_path, image_dir, image_prefix=None, is_template=False):
     """
-    Manages the conversion of a PDF to 300 DPI PNG images or uses images from a cache.
-    If the PDF is provided, it converts only if the images do not already exist in the cache.
-    Returns a list with the full paths of the images.
+    Convert a PDF to 300 DPI PNG images, or reuse matching cached images.
+
+    When ``image_prefix`` is omitted, derive it from the PDF filename. This
+    namespaces template and student-sheet images by exam when the PDFs use
+    names such as ``EE2.template-sheet.pdf`` and
+    ``EE2.student-sheets.pdf``.
     """
     os.makedirs(image_dir, exist_ok=True)
     if not image_prefix and pdf_path:
